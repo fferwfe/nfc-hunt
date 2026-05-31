@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>主辦控台 · NFC 闖關</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Special+Elite&family=JetBrains+Mono:wght@400;700&display=swap');
+  :root{--paper:#f0e3c4;--paper-dark:#d9c89e;--ink:#2b1d12;--ink-soft:#5a4a35;--stamp-red:#b8341f;--success:#2d6a3e;--error:#a82626;--gold:#b8941f;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Serif TC',serif;background:var(--paper);color:var(--ink);min-height:100vh;
+    background-image:radial-gradient(ellipse at top left,rgba(255,255,255,0.4),transparent 60%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.08 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  /* LOGIN */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{background:rgba(255,250,235,0.9);border:2px solid var(--ink-soft);padding:36px 28px;width:100%;max-width:360px;text-align:center;box-shadow:4px 6px 0 rgba(0,0,0,0.1);}
+  .login-title{font-size:24px;font-weight:900;letter-spacing:4px;margin-bottom:6px;}
+  .login-sub{font-family:'Special Elite';font-size:12px;color:var(--ink-soft);letter-spacing:3px;margin-bottom:24px;}
+  .login-input{width:100%;background:transparent;border:none;border-bottom:2px solid var(--ink);font-family:'Noto Serif TC';font-size:18px;padding:8px 0;outline:none;text-align:center;margin-bottom:16px;}
+  .login-btn{display:block;width:100%;padding:12px;background:var(--ink);color:var(--paper);border:none;font-family:'Noto Serif TC';font-size:16px;font-weight:700;letter-spacing:3px;cursor:pointer;}
+  .login-err{color:var(--error);font-size:13px;margin-top:8px;display:none;}
+  /* MAIN */
+  .wrap{max-width:1200px;margin:0 auto;padding:30px 24px;}
+  .header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px double var(--ink);padding-bottom:16px;margin-bottom:24px;}
+  .header h1{font-size:32px;font-weight:900;letter-spacing:4px;}
+  .header .sub{font-family:'Special Elite',monospace;font-size:12px;color:var(--ink-soft);letter-spacing:3px;}
+  .stamp-title{display:inline-block;font-family:'Special Elite';border:3px solid var(--stamp-red);color:var(--stamp-red);padding:6px 14px;transform:rotate(-2deg);font-size:13px;letter-spacing:3px;}
+  .tabs{display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--ink);}
+  .tab{padding:10px 20px;cursor:pointer;font-weight:700;letter-spacing:2px;border:2px solid transparent;border-bottom:none;color:var(--ink-soft);}
+  .tab.active{background:var(--paper-dark);border-color:var(--ink);color:var(--ink);margin-bottom:-2px;}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .stat{background:rgba(255,250,235,0.5);border:1.5px solid var(--ink-soft);padding:16px;text-align:center;}
+  .stat-num{font-family:'Special Elite';font-size:36px;font-weight:700;color:var(--ink);}
+  .stat-label{font-size:12px;letter-spacing:2px;color:var(--ink-soft);text-transform:uppercase;}
+  .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
+  .team-card{background:rgba(255,250,235,0.6);border:1.5px solid var(--ink-soft);padding:16px;position:relative;box-shadow:2px 3px 0 rgba(0,0,0,0.08);}
+  .team-card.finished{border-color:var(--success);border-width:2.5px;background:rgba(45,106,62,0.1);}
+  .team-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .team-name{font-size:20px;font-weight:900;letter-spacing:1px;}
+  .route-tag{font-family:'Special Elite';font-size:12px;background:var(--ink);color:var(--paper);padding:3px 8px;letter-spacing:2px;}
+  .team-progress{display:flex;gap:4px;margin:10px 0;}
+  .pdot{flex:1;height:10px;background:var(--paper-dark);border:1px solid var(--ink-soft);}
+  .pdot.done{background:var(--stamp-red);border-color:var(--stamp-red);}
+  .pdot.finish{background:var(--success);border-color:var(--success);}
+  .team-meta{display:flex;justify-content:space-between;font-family:'Special Elite';font-size:12px;color:var(--ink-soft);margin-top:8px;}
+  .team-meta .err{color:var(--error);}
+  .finish-badge{position:absolute;top:-8px;right:-8px;background:var(--success);color:var(--paper);font-family:'Special Elite';padding:4px 8px;font-size:11px;letter-spacing:2px;transform:rotate(8deg);border:2px solid var(--paper);}
+  .leaderboard{background:rgba(255,250,235,0.6);border:1.5px solid var(--ink-soft);padding:20px;margin-bottom:20px;}
+  .leaderboard h2{font-size:22px;margin-bottom:14px;letter-spacing:2px;}
+  .lb-row{display:grid;grid-template-columns:50px 1fr 80px 100px 80px;gap:12px;padding:10px 0;border-bottom:1px dashed var(--ink-soft);align-items:center;}
+  .lb-row.head{font-family:'Special Elite';font-size:11px;letter-spacing:2px;color:var(--ink-soft);border-bottom:2px solid var(--ink);}
+  .lb-rank{font-family:'Special Elite';font-size:22px;font-weight:700;text-align:center;}
+  .lb-rank.gold{color:var(--gold);font-size:28px;}
+  .lb-rank.silver{color:#7a7a7a;font-size:25px;}
+  .lb-rank.bronze{color:#a05a2c;font-size:25px;}
+  .controls{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .btn{padding:10px 18px;background:var(--ink);color:var(--paper);border:none;font-family:'Noto Serif TC';font-weight:700;letter-spacing:2px;cursor:pointer;}
+  .btn.danger{background:var(--error);}
+  .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink);}
+  .config-section{background:rgba(255,250,235,0.6);border:1.5px solid var(--ink-soft);padding:20px;margin-bottom:20px;}
+  .route-config{border-bottom:1px dashed var(--ink-soft);padding:14px 0;}
+  .route-config:last-child{border-bottom:none;}
+  .route-config h3{font-size:18px;margin-bottom:10px;}
+  .field{display:flex;gap:10px;align-items:center;margin:6px 0;}
+  .field label{width:100px;font-size:13px;color:var(--ink-soft);}
+  .field input,.field textarea{flex:1;background:var(--paper);border:1.5px solid var(--ink-soft);padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;}
+  .field textarea{min-height:60px;resize:vertical;}
+  .empty{text-align:center;padding:60px 20px;color:var(--ink-soft);font-style:italic;}
+  .site-url-row{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+  .site-url-row input{flex:1;min-width:200px;background:var(--paper);border:1.5px solid var(--ink-soft);padding:8px 10px;font-family:'JetBrains Mono';font-size:13px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWrap" class="login-wrap">
+  <div class="login-card">
+    <div class="login-title">主 辦 控 台</div>
+    <div class="login-sub">ADMIN · NFC ROUTE CHALLENGE</div>
+    <input id="pwInput" class="login-input" type="password" placeholder="輸入密碼">
+    <div class="login-err" id="pwErr">密碼錯誤</div>
+    <button class="login-btn" onclick="doLogin()">進 入</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="appWrap" style="display:none">
+<div class="wrap">
+  <div class="header">
+    <div><h1>主 辦 控 台</h1><div class="sub">ADMIN · NFC ROUTE CHALLENGE</div></div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="stamp-title">OFFICIAL · LIVE</div>
+      <button class="btn ghost" style="padding:6px 12px;font-size:13px" onclick="doLogout()">登出</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dashboard',this)">即時進度</div>
+    <div class="tab" onclick="switchTab('leaderboard',this)">完賽排行</div>
+    <div class="tab" onclick="switchTab('config',this)">路線設定</div>
+    <div class="tab" onclick="switchTab('cards',this)">卡片網址</div>
+  </div>
+
+  <!-- 即時進度 -->
+  <div id="tab-dashboard" class="tab-content active">
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">參賽隊伍</div></div>
+      <div class="stat"><div class="stat-num" id="statFinish">0</div><div class="stat-label">已完賽</div></div>
+      <div class="stat"><div class="stat-num" id="statOngoing">0</div><div class="stat-label">進行中</div></div>
+      <div class="stat"><div class="stat-num" id="statErrors">0</div><div class="stat-label">總錯誤數</div></div>
+    </div>
+    <div class="controls">
+      <button class="btn" onclick="refreshTeams()">🔄 重新整理</button>
+      <button class="btn danger" onclick="resetAll()">⚠ 重置全部隊伍</button>
+    </div>
+    <div id="teamGrid" class="team-grid"></div>
+    <div id="emptyHint" class="empty">尚未有隊伍掃卡，等玩家開始活動...</div>
+  </div>
+
+  <!-- 排行榜 -->
+  <div id="tab-leaderboard" class="tab-content">
+    <div class="leaderboard">
+      <h2>🏆 完賽排行榜</h2>
+      <div class="lb-row head"><div>名次</div><div>隊伍</div><div>路線</div><div>總分</div><div>用時</div></div>
+      <div id="leaderboardBody"></div>
+    </div>
+  </div>
+
+  <!-- 路線設定 -->
+  <div id="tab-config" class="tab-content">
+    <div class="config-section">
+      <h2 style="margin-bottom:16px">路線設定</h2>
+      <div id="configEditor"></div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" onclick="saveConfig()">儲存設定</button>
+        <button class="btn ghost" onclick="loadAndRenderConfig()">重新載入</button>
+        <button class="btn ghost" onclick="addRoute()">＋ 新增路線</button>
+      </div>
+      <div style="margin-top:14px;font-size:13px;color:var(--ink-soft);line-height:1.7">
+        ★ <strong>keys</strong> 是每張卡片的驗證碼，用逗號分隔，數量要等於站數。<br>
+        ★ 謎題是掃到第 N 站後顯示、引導到第 N+1 站的文字。
+      </div>
+    </div>
+  </div>
+
+  <!-- 卡片網址 -->
+  <div id="tab-cards" class="tab-content">
+    <div class="config-section">
+      <h2 style="margin-bottom:14px">卡片網址清單</h2>
+      <div class="site-url-row">
+        <label style="font-size:13px;color:var(--ink-soft);white-space:nowrap">玩家頁網址：</label>
+        <input id="siteUrlInput" placeholder="https://fferwfe.github.io/nfc-hunt/player.html" value="">
+        <button class="btn" onclick="saveSiteUrl()">儲存</button>
+      </div>
+      <div style="background:rgba(45,106,62,0.08);border:1.5px solid var(--success);padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8">
+        <strong>🍎 iPhone 寫卡 — 用「NFC Tools」App</strong><br>
+        1. App Store 安裝「NFC Tools」<br>
+        2. 寫入 → 新增記錄 → URL/URI → 貼入網址<br>
+        3. iPhone 背面上方靠近空白卡片 → 成功
+      </div>
+      <div id="cardsList" style="font-family:'JetBrains Mono';font-size:12px;line-height:1.8"></div>
+      <button class="btn ghost" style="margin-top:14px" onclick="copyAllCards()">📋 全部複製</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, getDocs, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBCtE0kZWmyt2UiAq2as5g65pfKIzm9QQE",
+  authDomain: "nfc-hunt-a9cb3.firebaseapp.com",
+  projectId: "nfc-hunt-a9cb3",
+  storageBucket: "nfc-hunt-a9cb3.firebasestorage.app",
+  messagingSenderId: "376155129888",
+  appId: "1:376155129888:web:8d4d214f50777580325445"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const $ = id => document.getElementById(id);
+let CONFIG = null;
+let TEAMS = {};
+let adminPw = localStorage.getItem('admin_pw') || 'admin1234';
+let siteUrl = localStorage.getItem('admin_siteUrl') || '';
+let lbUnsub = null;
+
+// ── LOGIN ──
+window.doLogin = function() {
+  const pw = $('pwInput').value;
+  if (pw === adminPw) {
+    $('loginWrap').style.display = 'none';
+    $('appWrap').style.display = 'block';
+    $('siteUrlInput').value = siteUrl;
+    loadAndRenderConfig();
+    startLiveUpdates();
+  } else {
+    $('pwErr').style.display = 'block';
+  }
+}
+window.doLogout = function() {
+  $('loginWrap').style.display = 'flex';
+  $('appWrap').style.display = 'none';
+  if (lbUnsub) lbUnsub();
+}
+$('pwInput').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// ── LIVE UPDATES ──
+function startLiveUpdates() {
+  lbUnsub = onSnapshot(collection(db, 'teams'), snap => {
+    TEAMS = {};
+    snap.forEach(d => { TEAMS[d.id] = d.data(); });
+    render();
+  });
+}
+
+window.refreshTeams = async function() {
+  const snap = await getDocs(collection(db, 'teams'));
+  TEAMS = {};
+  snap.forEach(d => { TEAMS[d.id] = d.data(); });
+  render();
+}
+
+// ── TABS ──
+window.switchTab = function(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  $('tab-'+name).classList.add('active');
+  if (name==='cards') renderCards();
+  if (name==='leaderboard') renderLeaderboard();
+}
+
+// ── RENDER TEAMS ──
+function render() {
+  const list = Object.entries(TEAMS).map(([id,t])=>({id,...t}));
+  let finished=0, errors=0;
+  list.forEach(t => {
+    const total = CONFIG?.routes?.[t.route]?.stations||9;
+    if (t.progress>=total) finished++;
+    errors += (t.errors||0);
+  });
+  $('statTotal').textContent = list.length;
+  $('statFinish').textContent = finished;
+  $('statOngoing').textContent = list.length - finished;
+  $('statErrors').textContent = errors;
+
+  list.sort((a,b) => {
+    const at=CONFIG?.routes?.[a.route]?.stations||9, bt=CONFIG?.routes?.[b.route]?.stations||9;
+    const af=a.progress>=at, bf=b.progress>=bt;
+    if (af&&!bf) return 1; if (!af&&bf) return -1;
+    if (af&&bf) return (a.finishTime||0)-(b.finishTime||0);
+    return (b.progress||0)-(a.progress||0);
+  });
+
+  const grid=$('teamGrid'), empty=$('emptyHint');
+  if (!list.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  grid.innerHTML = list.map(t => {
+    const total=CONFIG?.routes?.[t.route]?.stations||9;
+    const isFinish=t.progress>=total;
+    const dots=[];
+    for (let i=1;i<=total;i++) {
+      let cls='pdot';
+      if (i<=t.progress) cls+=i===total?' finish':' done';
+      dots.push(`<div class="${cls}"></div>`);
+    }
+    const elapsed = t.startTime ? formatDuration(t.startTime, t.finishTime||Date.now()) : '—';
+    return `<div class="team-card ${isFinish?'finished':''}">
+      ${isFinish?'<div class="finish-badge">FINISH ★</div>':''}
+      <div class="team-head"><div class="team-name">${esc(t.name||t.id)}</div><div class="route-tag">${t.route?'路線 '+t.route:'尚未起跑'}</div></div>
+      <div class="team-progress">${dots.join('')}</div>
+      <div class="team-meta">
+        <span>進度 ${t.progress||0}/${total}</span>
+        <span style="color:#b8941f;font-weight:700">★ ${t.points||0} 分</span>
+        <span>用時 ${elapsed}</span>
+      </div>
+      <div class="team-meta" style="margin-top:4px">
+        <span class="${(t.errors||0)>0?'err':''}">錯誤 ${t.errors||0}</span>
+        <span>🥚 彩蛋 ${(t.bonusesFound||[]).length}</span>
+        <span></span>
+      </div>
+      <div style="margin-top:10px">
+        <button onclick="resetTeam('${t.id.replace(/'/g,"\\'")}')" style="font-size:11px;padding:4px 10px;background:transparent;border:1px solid var(--ink-soft);color:var(--ink-soft);cursor:pointer;letter-spacing:1px;">重置此隊</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  const list = Object.entries(TEAMS).map(([id,t])=>({id,...t}));
+  list.sort((a,b) => {
+    const at=CONFIG?.routes?.[a.route]?.stations||9, bt=CONFIG?.routes?.[b.route]?.stations||9;
+    const aFin=a.progress>=at, bFin=b.progress>=bt;
+    if (aFin&&!bFin) return -1; if (!aFin&&bFin) return 1;
+    const ap=a.points||0, bp=b.points||0;
+    if (bp!==ap) return bp-ap;
+    if (aFin&&bFin) return (a.finishTime||0)-(b.finishTime||0);
+    return (b.progress||0)-(a.progress||0);
+  });
+  const body=$('leaderboardBody');
+  if (!list.length) { body.innerHTML='<div class="empty">尚無隊伍參賽</div>'; return; }
+  body.innerHTML = list.map((t,i) => {
+    const tt=CONFIG?.routes?.[t.route]?.stations||9;
+    const isFin=t.progress>=tt;
+    const rankCls=isFin&&i===0?'gold':isFin&&i===1?'silver':isFin&&i===2?'bronze':'';
+    const medal=isFin&&i===0?'🥇':isFin&&i===1?'🥈':isFin&&i===2?'🥉':(i+1);
+    const elapsed=isFin?formatDuration(t.startTime,t.finishTime):`進度 ${t.progress}/${tt}`;
+    return `<div class="lb-row" style="${isFin?'':'opacity:0.65'}">
+      <div class="lb-rank ${rankCls}">${medal}</div>
+      <div><strong>${esc(t.name||t.id)}</strong>${(t.bonusesFound||[]).length?` <span style="font-size:11px">🥚×${t.bonusesFound.length}</span>`:''}</div>
+      <div>${t.route||'—'}</div>
+      <div style="font-family:'Special Elite';color:#b8941f;font-weight:700">${t.points||0}</div>
+      <div style="font-family:'Special Elite'">${elapsed}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── CONFIG ──
+window.loadAndRenderConfig = async function() {
+  const snap = await getDoc(doc(db,'config','game'));
+  CONFIG = snap.exists() ? snap.data() : {
+    title: 'NFC 闖關活動',
+    routes: {
+      'A': { name:'路線 A', stations:9, stationPoints:10, keys:['k1','k2','k3','k4','k5','k6','k7','k8','k9'] },
+      'B': { name:'路線 B', stations:9, stationPoints:10, keys:['k1','k2','k3','k4','k5','k6','k7','k8','k9'] },
+      'C': { name:'路線 C', stations:9, stationPoints:10, keys:['k1','k2','k3','k4','k5','k6','k7','k8','k9'] }
+    },
+    stationHints: {},
+    bonuses: {}
+  };
+  renderConfigEditor();
+}
+
+function renderConfigEditor() {
+  const routes = CONFIG.routes || {};
+  const hints = CONFIG.stationHints || {};
+  $('configEditor').innerHTML = `
+    <div class="field" style="margin-bottom:16px">
+      <label>活動名稱</label>
+      <input id="cfgTitle" value="${esc(CONFIG.title||'')}">
+    </div>
+    <div id="routesEditor">
+    ${Object.entries(routes).map(([code,r]) => {
+      const riddles = hints[code]||[];
+      const riddleFields = Array.from({length:r.stations},(_, i) => {
+        const rd = riddles[i]||{};
+        return `<div style="border-left:3px solid var(--ink-soft);padding-left:10px;margin:8px 0">
+          <div style="font-size:12px;color:var(--ink-soft);margin-bottom:4px">第 ${i+1} 站 → 引導到第 ${i+2} 站的謎題</div>
+          <div class="field"><label style="width:50px">謎面</label><textarea data-rr="${code}" data-ri="${i}" data-rf="riddle">${esc(rd.riddle||'')}</textarea></div>
+          <div class="field"><label style="width:50px">小提示</label><input data-rr="${code}" data-ri="${i}" data-rf="hint" value="${esc(rd.hint||'')}"></div>
+        </div>`;
+      }).join('');
+      return `<div class="route-config">
+        <h3>路線 ${code} <button onclick="removeRoute('${code}')" style="font-size:11px;padding:2px 8px;background:var(--error);color:#fff;border:none;cursor:pointer;margin-left:8px">刪除</button></h3>
+        <div class="field"><label>名稱</label><input data-route="${code}" data-key="name" value="${esc(r.name||'')}"></div>
+        <div class="field"><label>站數</label><input data-route="${code}" data-key="stations" type="number" min="2" max="20" value="${r.stations}"></div>
+        <div class="field"><label>每站分數</label><input data-route="${code}" data-key="stationPoints" type="number" min="0" value="${r.stationPoints||10}"></div>
+        <div class="field"><label>驗證碼</label><input data-route="${code}" data-key="keys" value="${(r.keys||[]).join(',')}"></div>
+        <details style="margin-top:10px">
+          <summary style="cursor:pointer;font-weight:700;padding:6px 0">▸ 編輯謎題（${r.stations} 站）</summary>
+          ${riddleFields}
+        </details>
+      </div>`;
+    }).join('')}
+    </div>
+  `;
+}
+
+window.addRoute = function() {
+  const code = prompt('路線代碼（單一英文字母，如 D）:');
+  if (!code) return;
+  if (!CONFIG.routes) CONFIG.routes = {};
+  CONFIG.routes[code] = { name:'路線 '+code, stations:9, stationPoints:10, keys:Array(9).fill('key') };
+  renderConfigEditor();
+}
+
+window.removeRoute = function(code) {
+  if (!confirm(`確定刪除路線 ${code}？`)) return;
+  delete CONFIG.routes[code];
+  if (CONFIG.stationHints) delete CONFIG.stationHints[code];
+  renderConfigEditor();
+}
+
+window.saveConfig = async function() {
+  // 收集基本設定
+  CONFIG.title = $('cfgTitle').value;
+  document.querySelectorAll('#configEditor input[data-route]').forEach(inp => {
+    const r=inp.dataset.route, k=inp.dataset.key;
+    if (k==='stations') CONFIG.routes[r][k]=parseInt(inp.value);
+    else if (k==='stationPoints') CONFIG.routes[r][k]=parseInt(inp.value)||10;
+    else if (k==='keys') CONFIG.routes[r][k]=inp.value.split(',').map(s=>s.trim()).filter(Boolean);
+    else CONFIG.routes[r][k]=inp.value;
+  });
+  // 收集謎題
+  if (!CONFIG.stationHints) CONFIG.stationHints={};
+  document.querySelectorAll('#configEditor [data-rr]').forEach(inp => {
+    const route=inp.dataset.rr, idx=parseInt(inp.dataset.ri), field=inp.dataset.rf;
+    if (!CONFIG.stationHints[route]) CONFIG.stationHints[route]=[];
+    if (!CONFIG.stationHints[route][idx]) CONFIG.stationHints[route][idx]={};
+    CONFIG.stationHints[route][idx][field]=inp.value;
+  });
+  // 驗證
+  for (const [code,r] of Object.entries(CONFIG.routes)) {
+    if ((r.keys||[]).length!==r.stations) {
+      alert(`路線 ${code} 的驗證碼數量 (${(r.keys||[]).length}) 不等於站數 (${r.stations})`);
+      return;
+    }
+  }
+  await setDoc(doc(db,'config','game'), CONFIG);
+  alert('✅ 已儲存！');
+}
+
+// ── CARDS ──
+function renderCards() {
+  if (!CONFIG) { $('cardsList').textContent='請先載入路線設定'; return; }
+  const base = siteUrl || location.origin + '/player.html';
+  let html='', allText='';
+  Object.entries(CONFIG.routes).forEach(([code,r]) => {
+    html+=`<div style="margin-bottom:18px"><h3 style="font-family:'Noto Serif TC';font-size:18px;margin-bottom:8px;border-bottom:2px solid var(--ink);padding-bottom:4px">路線 ${code}</h3>`;
+    for (let i=1;i<=r.stations;i++) {
+      const key=(r.keys||[])[i-1]||'key';
+      const url=`${base}?r=${code}&n=${i}&k=${key}`;
+      allText+=`[路線${code}-第${i}站] ${url}\n`;
+      html+=`<div style="padding:6px 0;border-bottom:1px dotted var(--ink-soft);display:flex;align-items:center;gap:8px">
+        <strong style="white-space:nowrap">第 ${i} 站</strong>
+        <span style="flex:1;word-break:break-all;font-size:11px">${url}</span>
+        <button onclick="copyOne('${url.replace(/'/g,"\\'")}',this)" style="white-space:nowrap;padding:4px 10px;background:var(--ink);color:var(--paper);border:none;font-family:'Noto Serif TC';font-size:12px;cursor:pointer">複製</button>
+      </div>`;
+    }
+    html+='</div>';
+  });
+  // 彩蛋卡
+  if (CONFIG.bonuses && Object.keys(CONFIG.bonuses).length) {
+    html+=`<div style="margin-top:24px;padding:14px;background:rgba(184,148,31,0.1);border:2px dashed #b8941f">
+      <h3 style="font-family:'Noto Serif TC';font-size:18px;margin-bottom:8px;color:#8b6f15">🥚 彩蛋卡</h3>`;
+    Object.entries(CONFIG.bonuses).forEach(([id,b]) => {
+      const url=`${base}?b=${id}`;
+      allText+=`[彩蛋-${b.name}] ${url}\n`;
+      html+=`<div style="padding:6px 0;border-bottom:1px dotted #b8941f;display:flex;align-items:center;gap:8px">
+        <strong style="white-space:nowrap">${b.name} <span style="color:#b8941f">+${b.points}</span></strong>
+        <span style="flex:1;word-break:break-all;font-size:11px">${url}</span>
+        <button onclick="copyOne('${url.replace(/'/g,"\\'")}',this)" style="white-space:nowrap;padding:4px 10px;background:#b8941f;color:#fff;border:none;font-family:'Noto Serif TC';font-size:12px;cursor:pointer">複製</button>
+      </div>`;
+    });
+    html+='</div>';
+  }
+  $('cardsList').innerHTML = html;
+  window._allCardsText = allText;
+}
+
+window.copyOne = function(url,btn) {
+  navigator.clipboard.writeText(url).then(()=>{
+    const old=btn.textContent; btn.textContent='已複製✓'; btn.style.background='var(--success)';
+    setTimeout(()=>{btn.textContent=old;btn.style.background=btn.dataset.gold?'#b8941f':'var(--ink)';},1500);
+  });
+}
+window.copyAllCards = function() {
+  if (!window._allCardsText) return;
+  navigator.clipboard.writeText(window._allCardsText).then(()=>alert('已複製全部網址'));
+}
+
+window.saveSiteUrl = function() {
+  siteUrl = $('siteUrlInput').value.trim().replace(/\/$/,'');
+  localStorage.setItem('admin_siteUrl', siteUrl);
+  alert('✅ 已儲存！');
+}
+
+// ── RESET ──
+window.resetAll = async function() {
+  if (!confirm('確定重置全部隊伍？')) return;
+  const snap = await getDocs(collection(db,'teams'));
+  await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
+  TEAMS={};
+  render();
+  alert('✅ 已重置');
+}
+window.resetTeam = async function(id) {
+  if (!confirm(`確定重置「${id}」這個隊伍？`)) return;
+  await deleteDoc(doc(db,'teams',id));
+}
+
+// ── UTILS ──
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function formatDuration(start,end){
+  if (!start) return '—';
+  const sec=Math.floor(((end||Date.now())-start)/1000);
+  return `${Math.floor(sec/60)}分${String(sec%60).padStart(2,'0')}秒`;
+}
+</script>
+</body>
+</html>
