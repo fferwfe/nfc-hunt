@@ -1,183 +1,273 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>🛠️ 尋寶後台</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理員後台</title>
 <style>
-:root{--bg:#0a0e1a;--panel:#111827;--panel2:#1a2333;--border:#1e3a5f;--accent:#00d4ff;--success:#00ff88;--danger:#ff4757;--warn:#ffcc00;--text:#e2e8f0;--muted:#64748b;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-.topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.topbar-title{font-family:'Orbitron',monospace;font-size:13px;color:var(--accent);letter-spacing:.2em;}
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-.login-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:36px 28px;width:100%;max-width:360px;text-align:center;}
-.login-icon{font-size:40px;margin-bottom:12px;}
-.login-title{font-family:'Orbitron',monospace;font-size:16px;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;}
-.login-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
-.field{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:15px;font-family:'Noto Sans TC',sans-serif;color:var(--text);width:100%;outline:none;margin-bottom:10px;transition:border-color .2s;}
-.field:focus{border-color:var(--accent);}
-textarea.field{resize:vertical;min-height:80px;}
-.btn{border:none;border-radius:8px;padding:12px 20px;font-family:'Noto Sans TC',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
-.btn-primary{background:var(--accent);color:#000;width:100%;justify-content:center;}
-.btn-success{background:var(--success);color:#000;}
-.btn-danger{background:var(--danger);color:#fff;}
-.btn-ghost{background:var(--panel2);color:var(--text);border:1px solid var(--border);}
-.btn-warn{background:var(--warn);color:#000;}
-.btn:active{transform:scale(.96);}
-.btn:hover{opacity:.85;}
-.err-msg{color:var(--danger);font-size:12px;margin-top:6px;display:none;}
-.main{padding:20px 16px 60px;max-width:600px;margin:0 auto;}
-.section-title{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:.2em;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
-.activity-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;transition:border-color .2s;}
-.activity-card.active-act{border-color:var(--accent);}
-.activity-header{padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;}
-.activity-header:hover{background:rgba(255,255,255,.03);}
-.act-dot{width:10px;height:10px;border-radius:50%;background:var(--border);flex-shrink:0;}
-.activity-card.active-act .act-dot{background:var(--success);box-shadow:0 0 8px var(--success);}
-.act-name{flex:1;font-weight:700;font-size:15px;}
-.act-meta{font-size:11px;color:var(--muted);}
-.act-chevron{color:var(--muted);font-size:12px;transition:transform .3s;}
-.activity-card.open .act-chevron{transform:rotate(180deg);}
-.activity-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border);}
-.activity-card.open .activity-body{display:block;}
-.stage-item{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;}
-.stage-num{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--border);flex-shrink:0;width:32px;text-align:center;line-height:1.3;}
-.stage-info{flex:1;min-width:0;}
-.stage-title-text{font-weight:700;font-size:14px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.stage-clue-preview{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.stage-card-id{font-size:11px;color:var(--accent);font-family:'Orbitron',monospace;margin-top:4px;}
-.stage-actions{display:flex;gap:6px;flex-shrink:0;}
-.icon-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:13px;transition:all .2s;color:var(--text);}
-.icon-btn:hover{border-color:var(--accent);}
-.icon-btn.del:hover{border-color:var(--danger);color:var(--danger);}
-.nfc-url-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;font-family:'Orbitron',monospace;color:var(--accent);word-break:break-all;margin-top:6px;cursor:pointer;position:relative;}
-.nfc-url-box:hover{border-color:var(--accent);}
-.copy-hint{font-size:10px;color:var(--muted);display:block;margin-top:3px;font-family:'Noto Sans TC',sans-serif;}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:20px 16px;overflow-y:auto;}
-.modal-overlay.open{display:flex;}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:24px 20px;width:100%;max-width:480px;margin:auto;animation:modalIn .3s cubic-bezier(.34,1.56,.64,1) both;}
-@keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
-.modal-title{font-family:'Orbitron',monospace;font-size:13px;color:var(--accent);letter-spacing:.15em;margin-bottom:20px;}
-.form-group{margin-bottom:14px;}
-.form-label{font-size:11px;letter-spacing:.15em;color:var(--muted);margin-bottom:5px;display:block;}
-.modal-actions{display:flex;gap:8px;margin-top:20px;}
-.modal-actions .btn{flex:1;justify-content:center;}
-.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--panel);border-radius:10px;padding:4px;}
-.tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:700;border-radius:7px;cursor:pointer;transition:all .2s;color:var(--muted);border:none;background:none;}
-.tab.active{background:var(--accent);color:#000;}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
-.stat-num{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:var(--accent);}
-.stat-label{font-size:11px;color:var(--muted);margin-top:2px;}
-.lb-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;}
-.lb-rank{width:28px;font-family:'Orbitron',monospace;font-size:11px;color:var(--muted);font-weight:700;}
-.lb-rank.gold{color:var(--warn);}
-.lb-name{flex:1;font-weight:700;}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.1em;}
-.badge-active{background:rgba(0,255,136,.15);color:var(--success);border:1px solid rgba(0,255,136,.3);}
-.badge-inactive{background:rgba(100,116,139,.15);color:var(--muted);border:1px solid var(--border);}
-.empty-state{text-align:center;color:var(--muted);font-size:13px;padding:24px 0;}
-.pw-section{margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+  :root{--bg:#f5f5f7;--card:#fff;--border:#e5e5e7;--text:#1d1d1f;--text2:#6e6e73;--text3:#aeaeb2;--green:#1D9E75;--green2:#0F6E56;--red:#E24B4A;--yellow:#EF9F27;--blue:#1f4e7a;--gold:#b8941f;--radius:12px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  /* LOGIN */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 32px;width:100%;max-width:360px;text-align:center;}
+  .login-icon{font-size:40px;margin-bottom:16px;}
+  .login-title{font-size:22px;font-weight:900;margin-bottom:4px;}
+  .login-sub{font-size:13px;color:var(--text2);margin-bottom:28px;}
+  .input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-family:'Noto Sans TC';font-size:15px;outline:none;margin-bottom:10px;transition:border-color 0.2s;}
+  .input:focus{border-color:var(--green);}
+  select.input{background:var(--card);}
+  textarea.input{resize:vertical;min-height:70px;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:10px;font-family:'Noto Sans TC';font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;}
+  .btn-primary{background:var(--green);color:#fff;width:100%;padding:13px;}
+  .btn-primary:hover{background:var(--green2);}
+  .btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{background:var(--bg);}
+  .btn-danger{background:#fff0f0;color:var(--red);border:1px solid #ffd0d0;}
+  .btn-warn{background:#fffbe6;color:var(--yellow);border:1px solid #fde68a;}
+  .btn-blue{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn:active{transform:scale(0.97);}
+  /* TOPBAR */
+  .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .topbar-title{font-size:16px;font-weight:700;}
+  /* TABS */
+  .tabs{display:flex;overflow-x:auto;border-bottom:2px solid var(--border);background:var(--card);padding:0 16px;gap:0;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{padding:12px 16px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;}
+  .tab.active{color:var(--green);border-bottom-color:var(--green);}
+  .tab-content{display:none;padding:20px 16px 60px;max-width:800px;margin:0 auto;}
+  .tab-content.active{display:block;}
+  /* CARDS */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  .card-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+  .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+  .stat-num{font-size:32px;font-weight:900;}
+  .stat-label{font-size:11px;color:var(--text2);margin-top:2px;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .form-row{margin-bottom:12px;}
+  .form-label{font-size:12px;color:var(--text2);margin-bottom:5px;display:block;font-weight:500;}
+  .team-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .team-row:last-child{border-bottom:none;}
+  .team-name-display{font-size:15px;font-weight:700;min-width:80px;}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .lb-row:last-child{border-bottom:none;}
+  .lb-rank{width:32px;font-size:18px;text-align:center;}
+  .lb-name{flex:1;font-size:14px;font-weight:500;}
+  .lb-score{font-size:16px;font-weight:700;color:var(--green);}
+  .buzz-banner-admin{background:#f0fdf8;border:1px solid #a7f3d0;border-radius:10px;padding:12px 16px;margin-bottom:12px;display:none;}
+  .buzz-banner-admin.show{display:block;}
+  .q-elements-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;}
+  .q-chip{background:var(--bg);border-radius:8px;padding:8px;text-align:center;}
+  .q-chip-label{font-size:10px;color:var(--text2);margin-bottom:3px;}
+  .q-chip-val{font-size:13px;font-weight:500;}
+  .timer-bar-bg{background:var(--bg);border-radius:99px;height:8px;overflow:hidden;margin:8px 0;}
+  .timer-bar{height:100%;background:var(--green);border-radius:99px;transition:width 1s linear,background 0.5s;}
+  .stage-item{background:var(--bg);border-radius:8px;padding:12px;margin-bottom:8px;}
+  .stage-item-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .nfc-url{font-size:11px;font-family:'JetBrains Mono';color:var(--green);word-break:break-all;background:#f0fdf8;padding:6px 8px;border-radius:6px;margin-top:6px;cursor:pointer;}
+  .score-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+  .score-row:last-child{border-bottom:none;}
+  .star-btn{background:none;border:1px solid var(--border);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;}
+  .star-btn.active{background:#FAC775;border-color:#EF9F27;}
+  .pdot{flex:1;height:8px;background:var(--bg);border:1px solid var(--border);border-radius:2px;}
+  .pdot.done{background:var(--red);border-color:var(--red);}
+  .pdot.finish{background:var(--green);border-color:var(--green);}
+  .team-progress{display:flex;gap:3px;margin:6px 0;}
+  .nfc-team-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+  .nfc-team-card.finished{border-color:var(--green);}
+  small{font-size:11px;color:var(--text2);}
+  .empty{text-align:center;padding:32px;color:var(--text2);font-size:13px;}
 </style>
 </head>
 <body>
 <div id="loginWrap" class="login-wrap">
   <div class="login-card">
     <div class="login-icon">🛠️</div>
-    <div class="login-title">ADMIN PANEL</div>
-    <div class="login-sub">尋寶後台管理系統</div>
-    <input class="field" id="pwInput" type="password" placeholder="輸入管理員密碼">
-    <div class="err-msg" id="pwErr">密碼錯誤，請再試一次</div>
-    <button class="btn btn-primary" style="margin-top:10px" onclick="doLogin()">登入</button>
+    <div class="login-title">管理員後台</div>
+    <div class="login-sub">輸入密碼進入</div>
+    <input class="input" id="pwInput" type="password" placeholder="管理員密碼">
+    <div id="pwErr" style="color:#E24B4A;font-size:12px;margin-bottom:8px;display:none">密碼錯誤</div>
+    <button class="btn btn-primary" onclick="doLogin()">登入</button>
   </div>
 </div>
 
 <div id="appWrap" style="display:none">
   <div class="topbar">
-    <div class="topbar-title">🛠️ 尋寶後台</div>
-    <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="doLogout()">登出</button>
+    <div class="topbar-title">🛠️ 管理員後台</div>
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="doLogout()">登出</button>
   </div>
-  <div class="main">
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('activities')">活動管理</button>
-      <button class="tab" onclick="switchTab('monitor')">即時監控</button>
-      <button class="tab" onclick="switchTab('settings')">設定</button>
-    </div>
-    <div id="tab-activities">
-      <div class="section-title">
-        <span>活動列表</span>
-        <button class="btn btn-success" style="padding:6px 14px;font-size:12px" onclick="openActivityModal()">＋ 新增活動</button>
-      </div>
-      <div id="activityList"></div>
-    </div>
-    <div id="tab-monitor" style="display:none">
-      <div class="section-title">即時監控</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-num" id="statTeams">0</div><div class="stat-label">參賽隊伍</div></div>
-        <div class="stat-card"><div class="stat-num" id="statFinished">0</div><div class="stat-label">完成隊伍</div></div>
-      </div>
-      <div class="section-title" style="margin-bottom:10px">排行榜</div>
-      <div id="monitorLb"></div>
-      <button class="btn btn-danger" style="width:100%;justify-content:center;margin-top:12px;font-size:13px" onclick="clearLb()">🗑️ 清除所有玩家資料</button>
-    </div>
-    <div id="tab-settings" style="display:none">
-      <div class="section-title">網站設定</div>
-      <div class="form-group">
-        <label class="form-label">玩家頁網址（用來產生 NFC 卡片網址）</label>
-        <input class="field" id="siteUrlInput" type="url" placeholder="https://fferwfe.github.io/55">
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">填入後，每一關下面會自動顯示 NFC 卡片網址</div>
-      </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveSiteUrl()">儲存</button>
-      <div class="pw-section">
-        <div class="section-title" style="margin-bottom:12px">變更密碼</div>
-        <div class="form-group"><label class="form-label">新密碼</label><input class="field" id="newPwInput" type="password" placeholder="新密碼"></div>
-        <div class="form-group"><label class="form-label">確認新密碼</label><input class="field" id="newPwConfirm" type="password" placeholder="再輸入一次"></div>
-        <button class="btn btn-warn" style="width:100%;justify-content:center" onclick="changePw()">變更密碼</button>
-      </div>
-    </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('overview',this)">📊 總覽</div>
+    <div class="tab" onclick="switchTab('groups',this)">👥 組別</div>
+    <div class="tab" onclick="switchTab('nfc',this)">🗺️ 尋寶</div>
+    <div class="tab" onclick="switchTab('quiz',this)">🎮 搶答</div>
+    <div class="tab" onclick="switchTab('scores',this)">⭐ 積分</div>
+    <div class="tab" onclick="switchTab('settings',this)">⚙️ 設定</div>
   </div>
-</div>
 
-<!-- MODAL: 活動 -->
-<div class="modal-overlay" id="activityModal">
-  <div class="modal">
-    <div class="modal-title" id="actModalTitle">新增活動</div>
-    <div class="form-group"><label class="form-label">活動名稱</label><input class="field" id="actName" type="text" placeholder="例：2025 夏令營尋寶"></div>
-    <div class="form-group"><label class="form-label">活動日期</label><input class="field" id="actDate" type="date"></div>
-    <div class="form-group"><label class="form-label">狀態</label>
-      <select class="field" id="actStatus"><option value="active">進行中</option><option value="inactive">停用</option></select>
+  <!-- 總覽 -->
+  <div id="tab-overview" class="tab-content active">
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card"><div class="stat-num" id="ov-groups">0</div><div class="stat-label">組別數</div></div>
+      <div class="stat-card"><div class="stat-num" id="ov-nfc-done">0</div><div class="stat-label">尋寶完成</div></div>
+      <div class="stat-card"><div class="stat-num" id="ov-quiz-q">0</div><div class="stat-label">搶答題數</div></div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('activityModal')">取消</button>
-      <button class="btn btn-primary" onclick="saveActivity()">儲存</button>
+    <div class="card">
+      <div class="card-title">🏆 目前總積分排行</div>
+      <div id="ov-lb"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">快速連結</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="window.open('player-nfc.html')">🗺️ 尋寶玩家頁</button>
+        <button class="btn btn-secondary" onclick="window.open('player-quiz.html')">🎮 搶答玩家頁</button>
+        <button class="btn btn-secondary" onclick="window.open('player-score.html')">⭐ 積分查詢</button>
+        <button class="btn btn-secondary" onclick="window.open('screen-nfc.html')">📺 尋寶大螢幕</button>
+        <button class="btn btn-secondary" onclick="window.open('screen-quiz.html')">📺 搶答大螢幕</button>
+        <button class="btn btn-secondary" onclick="window.open('screen-total.html')">📺 總積分榜</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL: 關卡 -->
-<div class="modal-overlay" id="stageModal">
-  <div class="modal">
-    <div class="modal-title" id="stageModalTitle">新增關卡</div>
-    <div class="form-group"><label class="form-label">關卡標題</label><input class="field" id="stageTitle" type="text" placeholder="例：任務啟動：找到起點"></div>
-    <div class="form-group"><label class="form-label">線索內容</label><textarea class="field" id="stageClue" placeholder="描述玩家需要去哪裡找 NFC 卡片…"></textarea></div>
-    <div class="form-group"><label class="form-label">提示（選填）</label><input class="field" id="stageHint" type="text" placeholder="更直接的方向提示"></div>
-    <div class="form-group"><label class="form-label">NFC 卡片 ID</label><input class="field" id="stageCardId" type="text" placeholder="NFC-001"></div>
-    <div id="nfcUrlPreview" style="display:none">
-      <div class="form-label" style="margin-top:4px">📡 寫入此網址到 NFC 卡片：</div>
-      <div class="nfc-url-box" id="nfcUrlText" onclick="copyNfcUrl()"><span class="copy-hint">點擊複製</span></div>
+  <!-- 組別管理 -->
+  <div id="tab-groups" class="tab-content">
+    <div class="card">
+      <div class="card-title">新增組別</div>
+      <div class="form-row"><label class="form-label">組別名稱</label><input class="input" id="new-group-name" placeholder="例：閃電隊"></div>
+      <div class="form-row"><label class="form-label">NFC 尋寶路線</label>
+        <select class="input" id="new-group-route">
+          <option value="">— 未指定 —</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="addGroup()">＋ 新增組別</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('stageModal')">取消</button>
-      <button class="btn btn-primary" onclick="saveStage()">儲存關卡</button>
+    <div class="card">
+      <div class="card-title">所有組別</div>
+      <div id="groups-list"></div>
+    </div>
+  </div>
+
+  <!-- 尋寶管理 -->
+  <div id="tab-nfc" class="tab-content">
+    <div class="card">
+      <div class="card-title">路線管理</div>
+      <div id="nfc-routes-list"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="addNfcRoute()">＋ 新增路線</button>
+        <button class="btn btn-primary" onclick="saveNfcConfig()">💾 儲存路線設定</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">NFC 卡片網址</div>
+      <div class="form-row">
+        <label class="form-label">玩家頁網址</label>
+        <input class="input" id="nfc-base-url" placeholder="https://你的網址/player-nfc.html">
+      </div>
+      <button class="btn btn-secondary" onclick="saveNfcBaseUrl(); renderNfcCards()">套用並產生網址</button>
+      <div id="nfc-cards-list" style="margin-top:16px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 尋寶進度監控</div>
+      <button class="btn btn-secondary" style="margin-bottom:12px" onclick="renderNfcMonitor()">🔄 重新整理</button>
+      <div id="nfc-monitor"></div>
+    </div>
+  </div>
+
+  <!-- 搶答管理 -->
+  <div id="tab-quiz" class="tab-content">
+    <!-- 搶答狀態 -->
+    <div class="buzz-banner-admin" id="buzz-banner-admin">
+      <div style="font-size:11px;color:var(--green2);font-weight:500;margin-bottom:4px">🔔 搶答！</div>
+      <div style="font-size:20px;font-weight:700;color:var(--green2)" id="buzz-group-admin">—</div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <span>題目控制</span>
+        <span style="font-size:12px;color:var(--text2)">第 <span id="quiz-q-num">1</span> 題 / <span id="quiz-q-total">—</span></span>
+      </div>
+      <div style="font-size:15px;font-weight:500;margin-bottom:8px" id="quiz-q-text-admin">—</div>
+      <div class="q-elements-grid" id="quiz-elements-admin"></div>
+      <div class="timer-bar-bg"><div class="timer-bar" id="quiz-timer-bar" style="width:100%"></div></div>
+      <div style="text-align:center;font-size:13px;color:var(--text2);margin-bottom:12px">剩餘 <strong id="quiz-timer-num">60</strong> 秒</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="quizShowQuestion()">📢 出題</button>
+        <button class="btn btn-secondary" onclick="quizStartTimer()">▶ 計時</button>
+        <button class="btn btn-secondary" onclick="quizResetTimer()">↺ 重設</button>
+        <button class="btn btn-secondary" onclick="quizClearBuzz()">🔕 清除搶答</button>
+        <button class="btn btn-secondary" onclick="quizPrevQ()">◀ 上題</button>
+        <button class="btn btn-secondary" onclick="quizNextQ()">下題 ▶</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">各組評分</div>
+      <div id="quiz-score-list"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="quizConfirmScore()">✅ 確認評分</button>
+        <button class="btn btn-secondary" onclick="quizShowBoard()">📊 顯示排行榜</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">題目管理</div>
+      <div id="quiz-q-editor"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="addQuizQ()">＋ 新增題目</button>
+        <button class="btn btn-primary" onclick="saveQuizQuestions()">💾 儲存題目</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">搶答積分榜</div>
+      <div id="quiz-lb-admin"></div>
+      <div class="btn-row">
+        <button class="btn btn-danger" onclick="resetQuiz()">⚠ 重置搶答</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 積分管理 -->
+  <div id="tab-scores" class="tab-content">
+    <div class="card">
+      <div class="card-title">總積分排行</div>
+      <div id="scores-total-lb"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">手動調整積分</div>
+      <div id="scores-adjust-list"></div>
+    </div>
+    <div class="btn-row" style="padding:0 0 16px">
+      <button class="btn btn-secondary" onclick="renderScoresTab()">🔄 重新整理</button>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div id="tab-settings" class="tab-content">
+    <div class="card">
+      <div class="card-title">活動基本設定</div>
+      <div class="form-row"><label class="form-label">活動名稱</label><input class="input" id="cfg-activity-name" placeholder="2025 夏令營"></div>
+      <div class="form-row"><label class="form-label">搶答作答秒數</label><input class="input" type="number" id="cfg-timer-secs" value="60" min="10" max="300"></div>
+      <button class="btn btn-primary" onclick="saveBaseSettings()">💾 儲存</button>
+    </div>
+    <div class="card">
+      <div class="card-title">變更密碼</div>
+      <div class="form-row"><label class="form-label">新密碼</label><input class="input" id="new-pw" type="password" placeholder="新密碼"></div>
+      <div class="form-row"><label class="form-label">確認密碼</label><input class="input" id="new-pw2" type="password" placeholder="再輸入一次"></div>
+      <button class="btn btn-warn" onclick="changePw()">變更密碼</button>
+    </div>
+    <div class="card">
+      <div class="card-title">危險操作</div>
+      <div class="btn-row">
+        <button class="btn btn-danger" onclick="resetAllNfc()">🗑️ 清除所有尋寶進度</button>
+        <button class="btn btn-danger" onclick="resetAllQuiz()">🗑️ 清除所有搶答積分</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBCtE0kZWmyt2UiAq2as5g65pfKIzm9QQE",
@@ -187,299 +277,438 @@ const firebaseConfig = {
   messagingSenderId: "376155129888",
   appId: "1:376155129888:web:8d4d214f50777580325445"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const $ = id => document.getElementById(id);
 
-let activities = [];
-let siteUrl = localStorage.getItem('admin_siteUrl') || '';
+// ── State ──
 let adminPw = localStorage.getItem('admin_pw') || 'admin1234';
-let editingActId = null;
-let editingStageIdx = null;
-let currentActId = null;
+let GROUPS = {}; // { id: { name, route, nfcPoints, quizPoints, bonusPoints } }
+let NFC_CONFIG = { routes: {}, stationHints: {}, bonuses: {} };
+let QUIZ_STATE = {};
+let QUIZ_QUESTIONS = [];
+let TIMER_SECS = 60;
+let nfcBaseUrl = localStorage.getItem('nfc_base_url') || '';
+let quizTimerInterval = null;
 
+// ── Firebase refs ──
+const groupsRef = doc(db,'config','groups');
+const nfcRef = doc(db,'config','nfc');
+const quizRef = doc(db,'quiz','game');
+const quizSettingsRef = doc(db,'quiz','settings');
+const baseRef = doc(db,'config','base');
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
-function formatTime(ms){ const s=Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
 
-// ── 登入 ──
+// ── LOGIN ──
 window.doLogin = function() {
-  const pw = document.getElementById('pwInput').value;
+  const pw = $('pwInput').value;
   if (pw === adminPw) {
-    document.getElementById('loginWrap').style.display = 'none';
-    document.getElementById('appWrap').style.display = 'block';
-    loadActivities();
+    $('loginWrap').style.display = 'none';
+    $('appWrap').style.display = 'block';
+    initApp();
   } else {
-    document.getElementById('pwErr').style.display = 'block';
+    $('pwErr').style.display = 'block';
   }
 }
-
 window.doLogout = function() {
-  document.getElementById('loginWrap').style.display = 'flex';
-  document.getElementById('appWrap').style.display = 'none';
-  document.getElementById('pwInput').value = '';
-  document.getElementById('pwErr').style.display = 'none';
+  $('loginWrap').style.display = 'flex';
+  $('appWrap').style.display = 'none';
 }
+$('pwInput').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
-// ── 載入活動 ──
-async function loadActivities() {
-  const snap = await getDocs(collection(db, 'activities'));
-  activities = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  activities.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
-  renderActivities();
-}
+// ── INIT ──
+async function initApp() {
+  // 載入設定
+  const [groupSnap, nfcSnap, quizSettSnap, baseSnap] = await Promise.all([
+    getDoc(groupsRef), getDoc(nfcRef), getDoc(quizSettingsRef), getDoc(baseRef)
+  ]);
+  if (groupSnap.exists()) GROUPS = groupSnap.data().groups || {};
+  if (nfcSnap.exists()) NFC_CONFIG = nfcSnap.data();
+  if (quizSettSnap.exists()) {
+    const d = quizSettSnap.data();
+    if (d.questions) QUIZ_QUESTIONS = d.questions;
+    if (d.timerSecs) TIMER_SECS = d.timerSecs;
+  }
+  if (baseSnap.exists()) {
+    const d = baseSnap.data();
+    if (d.activityName) $('cfg-activity-name').value = d.activityName;
+    if (d.timerSecs) { TIMER_SECS = d.timerSecs; $('cfg-timer-secs').value = d.timerSecs; }
+  }
+  nfcBaseUrl = localStorage.getItem('nfc_base_url') || location.origin + location.pathname.replace('admin.html','') + 'player-nfc.html';
+  $('nfc-base-url').value = nfcBaseUrl;
 
-window.switchTab = function(tab) {
-  ['activities','monitor','settings'].forEach((t,i) => {
-    document.getElementById('tab-'+t).style.display = t===tab?'':'none';
-    document.querySelectorAll('.tab')[i].classList.toggle('active', t===tab);
+  // Live listeners
+  onSnapshot(quizRef, snap => {
+    if (snap.exists()) { QUIZ_STATE = snap.data(); renderQuizTab(); }
   });
-  if (tab==='monitor') listenMonitor();
-  if (tab==='settings') document.getElementById('siteUrlInput').value = siteUrl;
-}
-
-function renderActivities() {
-  const el = document.getElementById('activityList');
-  if (!activities.length) { el.innerHTML = '<div class="empty-state">還沒有活動，點右上角新增！</div>'; return; }
-  el.innerHTML = activities.map(act => `
-    <div class="activity-card ${act.status==='active'?'active-act':''}" id="act-${act.id}">
-      <div class="activity-header" onclick="toggleAct('${act.id}')">
-        <div class="act-dot"></div>
-        <div>
-          <div class="act-name">${act.name}</div>
-          <div class="act-meta">${act.date||'未設定日期'} ・ ${(act.stages||[]).length} 關卡</div>
-        </div>
-        <span class="badge ${act.status==='active'?'badge-active':'badge-inactive'}">${act.status==='active'?'進行中':'停用'}</span>
-        <span class="act-chevron">▼</span>
-      </div>
-      <div class="activity-body">
-        <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap">
-          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="openActivityModal('${act.id}')">✏️ 編輯</button>
-          <button class="btn ${act.status==='active'?'btn-ghost':'btn-success'}" style="font-size:12px;padding:6px 12px" onclick="toggleActive('${act.id}')">${act.status==='active'?'⏸ 停用':'▶ 啟用'}</button>
-          <button class="btn btn-danger" style="font-size:12px;padding:6px 12px" onclick="deleteActivity('${act.id}')">🗑️ 刪除</button>
-        </div>
-        <div class="section-title" style="margin-bottom:8px">
-          <span>關卡（${(act.stages||[]).length} 關）</span>
-          <button class="btn btn-success" style="font-size:11px;padding:5px 10px" onclick="openStageModal('${act.id}')">＋ 新增關卡</button>
-        </div>
-        <div>
-          ${(act.stages||[]).length ? (act.stages||[]).map((s,i) => `
-            <div class="stage-item">
-              <div class="stage-num">${String(i+1).padStart(2,'0')}</div>
-              <div class="stage-info">
-                <div class="stage-title-text">${s.title}</div>
-                <div class="stage-clue-preview">${s.clue}</div>
-                <div class="stage-card-id">📡 ${s.cardId}</div>
-                ${siteUrl ? `<div class="nfc-url-box" onclick="copyText('${siteUrl}/index.html?card=${s.cardId}',this)">
-                  ${siteUrl}/index.html?card=${s.cardId}
-                  <span class="copy-hint">點擊複製網址</span>
-                </div>` : '<div style="font-size:11px;color:var(--muted);margin-top:4px">⚠️ 請在設定頁填入玩家頁網址</div>'}
-              </div>
-              <div class="stage-actions">
-                <button class="icon-btn" onclick="moveStage('${act.id}',${i},-1)" ${i===0?'disabled':''}>↑</button>
-                <button class="icon-btn" onclick="moveStage('${act.id}',${i},1)" ${i===(act.stages||[]).length-1?'disabled':''}>↓</button>
-                <button class="icon-btn" onclick="openStageModal('${act.id}',${i})">✏️</button>
-                <button class="icon-btn del" onclick="deleteStage('${act.id}',${i})">🗑️</button>
-              </div>
-            </div>
-          `).join('') : '<div class="empty-state" style="padding:12px 0">還沒有關卡</div>'}
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-window.toggleAct = function(id) { document.getElementById('act-'+id).classList.toggle('open'); }
-
-window.openActivityModal = function(id) {
-  editingActId = id || null;
-  if (id) {
-    const act = activities.find(a=>a.id===id);
-    document.getElementById('actModalTitle').textContent = '編輯活動';
-    document.getElementById('actName').value = act.name;
-    document.getElementById('actDate').value = act.date || '';
-    document.getElementById('actStatus').value = act.status;
-  } else {
-    document.getElementById('actModalTitle').textContent = '新增活動';
-    document.getElementById('actName').value = '';
-    document.getElementById('actDate').value = '';
-    document.getElementById('actStatus').value = 'active';
-  }
-  document.getElementById('activityModal').classList.add('open');
-}
-
-window.saveActivity = async function() {
-  const name = document.getElementById('actName').value.trim();
-  if (!name) { alert('請輸入活動名稱'); return; }
-  const date = document.getElementById('actDate').value;
-  const status = document.getElementById('actStatus').value;
-  const id = editingActId || genId();
-  const existing = activities.find(a=>a.id===id);
-  const act = { id, name, date, status, stages: existing ? existing.stages : [], createdAt: existing ? existing.createdAt : Date.now() };
-  await setDoc(doc(db, 'activities', id), act);
-  // 如果是 active，更新 config
-  if (status === 'active') {
-    await setDoc(doc(db, 'config', 'activeActivity'), { activityId: id });
-  }
-  closeModal('activityModal');
-  await loadActivities();
-}
-
-window.deleteActivity = async function(id) {
-  if (!confirm('確定刪除這個活動？')) return;
-  await deleteDoc(doc(db, 'activities', id));
-  await loadActivities();
-}
-
-window.toggleActive = async function(id) {
-  const act = activities.find(a=>a.id===id);
-  act.status = act.status==='active' ? 'inactive' : 'active';
-  await setDoc(doc(db, 'activities', id), act);
-  if (act.status === 'active') {
-    await setDoc(doc(db, 'config', 'activeActivity'), { activityId: id });
-  }
-  await loadActivities();
-}
-
-window.openStageModal = function(actId, idx) {
-  currentActId = actId;
-  editingStageIdx = idx !== undefined ? idx : null;
-  const act = activities.find(a=>a.id===actId);
-  if (editingStageIdx !== null) {
-    const s = act.stages[editingStageIdx];
-    document.getElementById('stageModalTitle').textContent = `編輯第 ${editingStageIdx+1} 關`;
-    document.getElementById('stageTitle').value = s.title;
-    document.getElementById('stageClue').value = s.clue;
-    document.getElementById('stageHint').value = s.hint || '';
-    document.getElementById('stageCardId').value = s.cardId;
-  } else {
-    const n = (act.stages||[]).length + 1;
-    document.getElementById('stageModalTitle').textContent = `新增第 ${n} 關`;
-    document.getElementById('stageTitle').value = '';
-    document.getElementById('stageClue').value = '';
-    document.getElementById('stageHint').value = '';
-    document.getElementById('stageCardId').value = `NFC-${String(n).padStart(3,'0')}`;
-  }
-  updateNfcPreview();
-  document.getElementById('stageModal').classList.add('open');
-}
-
-function updateNfcPreview() {
-  const cardId = document.getElementById('stageCardId').value.trim();
-  const preview = document.getElementById('nfcUrlPreview');
-  const urlText = document.getElementById('nfcUrlText');
-  if (siteUrl && cardId) {
-    preview.style.display = '';
-    urlText.innerHTML = `${siteUrl}/index.html?card=${cardId}<span class="copy-hint">點擊複製</span>`;
-  } else { preview.style.display = 'none'; }
-}
-window.updateNfcPreview = updateNfcPreview;
-
-window.saveStage = async function() {
-  const title = document.getElementById('stageTitle').value.trim();
-  const clue = document.getElementById('stageClue').value.trim();
-  const hint = document.getElementById('stageHint').value.trim();
-  const cardId = document.getElementById('stageCardId').value.trim();
-  if (!title || !clue || !cardId) { alert('請填入標題、線索和卡片 ID'); return; }
-  const act = activities.find(a=>a.id===currentActId);
-  if (!act.stages) act.stages = [];
-  const stage = { title, clue, hint, cardId };
-  if (editingStageIdx !== null) { act.stages[editingStageIdx] = stage; }
-  else { act.stages.push(stage); }
-  await setDoc(doc(db, 'activities', act.id), act);
-  closeModal('stageModal');
-  await loadActivities();
-  setTimeout(() => { const c=document.getElementById('act-'+currentActId); if(c&&!c.classList.contains('open')) c.classList.add('open'); }, 50);
-}
-
-window.deleteStage = async function(actId, idx) {
-  if (!confirm('確定刪除這一關？')) return;
-  const act = activities.find(a=>a.id===actId);
-  act.stages.splice(idx, 1);
-  await setDoc(doc(db, 'activities', act.id), act);
-  await loadActivities();
-  setTimeout(() => { const c=document.getElementById('act-'+actId); if(c&&!c.classList.contains('open')) c.classList.add('open'); }, 50);
-}
-
-window.moveStage = async function(actId, idx, dir) {
-  const act = activities.find(a=>a.id===actId);
-  const ni = idx + dir;
-  if (ni < 0 || ni >= act.stages.length) return;
-  [act.stages[idx], act.stages[ni]] = [act.stages[ni], act.stages[idx]];
-  await setDoc(doc(db, 'activities', act.id), act);
-  await loadActivities();
-  setTimeout(() => { const c=document.getElementById('act-'+actId); if(c&&!c.classList.contains('open')) c.classList.add('open'); }, 50);
-}
-
-// ── 監控 ──
-let lbUnsubscribe = null;
-function listenMonitor() {
-  if (lbUnsubscribe) lbUnsubscribe();
-  lbUnsubscribe = onSnapshot(collection(db, 'leaderboard'), (snap) => {
-    let lb = snap.docs.map(d => d.data());
-    lb.sort((a,b) => { if(a.finished&&b.finished) return a.totalTime-b.totalTime; if(a.finished) return -1; if(b.finished) return 1; return b.stage-a.stage; });
-    document.getElementById('statTeams').textContent = lb.length;
-    document.getElementById('statFinished').textContent = lb.filter(r=>r.finished).length;
-    const active = activities.find(a=>a.status==='active');
-    const total = active ? (active.stages||[]).length : '?';
-    const el = document.getElementById('monitorLb');
-    if (!lb.length) { el.innerHTML = '<div class="empty-state">目前沒有玩家資料</div>'; return; }
-    el.innerHTML = lb.map((r,i) => `
-      <div class="lb-row">
-        <div class="lb-rank ${i===0?'gold':''}">${i+1}</div>
-        <div class="lb-name">${r.team}</div>
-        <div style="font-size:12px;color:var(--muted)">關${r.stage}/${total}</div>
-        ${r.finished ? `<div style="color:var(--success);font-size:11px;font-weight:700">✅ ${formatTime(r.totalTime)}</div>` : '<div style="font-size:12px;color:var(--muted)">進行中</div>'}
-      </div>
-    `).join('');
+  onSnapshot(groupsRef, snap => {
+    if (snap.exists()) { GROUPS = snap.data().groups || {}; renderOverview(); }
   });
+
+  renderAll();
 }
 
-window.clearLb = async function() {
-  if (!confirm('確定清除所有玩家資料？')) return;
-  const snap = await getDocs(collection(db, 'leaderboard'));
-  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+function renderAll() {
+  renderOverview();
+  renderGroupsTab();
+  renderNfcTab();
+  renderQuizTab();
+  renderScoresTab();
+}
+
+// ── TABS ──
+window.switchTab = function(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  $('tab-'+name).classList.add('active');
+}
+
+// ── OVERVIEW ──
+function renderOverview() {
+  const groups = Object.values(GROUPS);
+  $('ov-groups').textContent = groups.length;
+  $('ov-quiz-q').textContent = QUIZ_QUESTIONS.length;
+
+  // total leaderboard
+  const lb = groups.map(g => ({
+    name: g.name,
+    total: (g.nfcPoints||0) + (g.quizPoints||0) + (g.bonusPoints||0)
+  })).sort((a,b)=>b.total-a.total);
+  $('ov-lb').innerHTML = lb.length ? lb.map((g,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-name">${esc(g.name)}</div>
+      <div class="lb-score">${g.total} 分</div>
+    </div>`).join('') : '<div class="empty">尚無資料</div>';
+}
+
+// ── GROUPS ──
+function renderGroupsTab() {
+  // 更新路線選單
+  const routes = Object.keys(NFC_CONFIG.routes||{});
+  $('new-group-route').innerHTML = '<option value="">— 未指定 —</option>' + routes.map(r=>`<option value="${r}">路線 ${r}</option>`).join('');
+
+  const list = Object.entries(GROUPS);
+  $('groups-list').innerHTML = list.length ? list.map(([id,g])=>`
+    <div class="team-row">
+      <div class="team-name-display">${esc(g.name)}</div>
+      <select onchange="updateGroupRoute('${id}',this.value)" style="padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card)">
+        <option value="">未指定</option>
+        ${routes.map(r=>`<option value="${r}" ${g.route===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+      <small>NFC:${g.nfcPoints||0} 搶答:${g.quizPoints||0}</small>
+      <button onclick="deleteGroup('${id}')" class="btn btn-danger" style="padding:5px 10px;font-size:12px">刪除</button>
+    </div>`).join('') : '<div class="empty">尚無組別</div>';
+}
+
+window.addGroup = async function() {
+  const name = $('new-group-name').value.trim();
+  if (!name) { alert('請輸入組別名稱'); return; }
+  const route = $('new-group-route').value || null;
+  const id = genId();
+  GROUPS[id] = { name, route, nfcPoints:0, quizPoints:0, bonusPoints:0 };
+  await setDoc(groupsRef, { groups: GROUPS });
+  $('new-group-name').value = '';
+  renderGroupsTab();
+  renderOverview();
+}
+
+window.deleteGroup = async function(id) {
+  if (!confirm('確定刪除？')) return;
+  delete GROUPS[id];
+  await setDoc(groupsRef, { groups: GROUPS });
+  renderGroupsTab();
+}
+
+window.updateGroupRoute = async function(id, route) {
+  GROUPS[id].route = route || null;
+  await setDoc(groupsRef, { groups: GROUPS });
+}
+
+// ── NFC ──
+function renderNfcTab() {
+  renderNfcRoutes();
+  renderNfcCards();
+  renderNfcMonitor();
+}
+
+function renderNfcRoutes() {
+  const routes = NFC_CONFIG.routes || {};
+  $('nfc-routes-list').innerHTML = Object.entries(routes).map(([code,r])=>`
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong>路線 ${code}</strong>
+        <button onclick="removeNfcRoute('${code}')" class="btn btn-danger" style="padding:4px 10px;font-size:12px">刪除</button>
+      </div>
+      <div class="form-row"><label class="form-label">站數</label><input class="input" id="nfc-stations-${code}" type="number" min="1" max="20" value="${r.stations||5}"></div>
+      <div class="form-row"><label class="form-label">每站分數</label><input class="input" id="nfc-pts-${code}" type="number" min="0" value="${r.stationPoints||10}"></div>
+      <div class="form-row"><label class="form-label">驗證碼（逗號分隔）</label><input class="input" id="nfc-keys-${code}" value="${(r.keys||[]).join(',')}"></div>
+      <details style="margin-top:8px">
+        <summary style="cursor:pointer;font-size:13px;color:var(--text2)">▸ 編輯謎題</summary>
+        <div style="margin-top:8px">
+          ${Array.from({length:r.stations||5},(_,i)=>{
+            const rd=(NFC_CONFIG.stationHints||{})[code]?.[i]||{};
+            return `<div style="margin-bottom:8px;padding:8px;background:var(--bg);border-radius:8px">
+              <div style="font-size:12px;color:var(--text2);margin-bottom:4px">第 ${i+1} 站謎題</div>
+              <input class="input" id="nfc-riddle-${code}-${i}" placeholder="謎面" value="${esc(rd.riddle||'')}" style="margin-bottom:6px">
+              <input class="input" id="nfc-hint-${code}-${i}" placeholder="提示（選填）" value="${esc(rd.hint||'')}">
+            </div>`;
+          }).join('')}
+        </div>
+      </details>
+    </div>`).join('') || '<div class="empty">尚無路線</div>';
+}
+
+window.addNfcRoute = function() {
+  const code = prompt('路線代碼（單一字母，如 A）:');
+  if (!code) return;
+  if (!NFC_CONFIG.routes) NFC_CONFIG.routes = {};
+  NFC_CONFIG.routes[code] = { stations:5, stationPoints:10, keys:['k1','k2','k3','k4','k5'] };
+  renderNfcRoutes();
+}
+
+window.removeNfcRoute = function(code) {
+  if (!confirm(`刪除路線 ${code}？`)) return;
+  delete NFC_CONFIG.routes[code];
+  if (NFC_CONFIG.stationHints) delete NFC_CONFIG.stationHints[code];
+  renderNfcRoutes();
+}
+
+window.saveNfcConfig = async function() {
+  Object.keys(NFC_CONFIG.routes||{}).forEach(code => {
+    const r = NFC_CONFIG.routes[code];
+    r.stations = parseInt($('nfc-stations-'+code)?.value)||5;
+    r.stationPoints = parseInt($('nfc-pts-'+code)?.value)||10;
+    r.keys = ($('nfc-keys-'+code)?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    if (!NFC_CONFIG.stationHints) NFC_CONFIG.stationHints={};
+    if (!NFC_CONFIG.stationHints[code]) NFC_CONFIG.stationHints[code]=[];
+    for (let i=0;i<r.stations;i++) {
+      NFC_CONFIG.stationHints[code][i] = {
+        riddle: $('nfc-riddle-'+code+'-'+i)?.value||'',
+        hint: $('nfc-hint-'+code+'-'+i)?.value||''
+      };
+    }
+    if (r.keys.length !== r.stations) { alert(`路線 ${code} 驗證碼數量不等於站數`); return; }
+  });
+  await setDoc(nfcRef, NFC_CONFIG);
+  alert('✅ 路線設定已儲存！');
+  renderNfcCards();
+}
+
+window.saveNfcBaseUrl = function() {
+  nfcBaseUrl = $('nfc-base-url').value.trim().replace(/\/$/,'');
+  localStorage.setItem('nfc_base_url', nfcBaseUrl);
+}
+
+function renderNfcCards() {
+  const base = nfcBaseUrl || location.origin + location.pathname.replace('admin.html','') + 'player-nfc.html';
+  let html = '';
+  Object.entries(NFC_CONFIG.routes||{}).forEach(([code,r]) => {
+    html += `<div style="margin-bottom:16px"><strong style="font-size:14px">路線 ${code}</strong>`;
+    for (let i=1;i<=r.stations;i++) {
+      const key=(r.keys||[])[i-1]||'key';
+      const url = `${base}?r=${code}&n=${i}&k=${key}`;
+      html += `<div class="stage-item">
+        <div class="stage-item-head">
+          <span style="font-size:13px;font-weight:500">第 ${i} 站</span>
+          <button onclick="navigator.clipboard.writeText('${url}').then(()=>alert('已複製！'))" class="btn btn-secondary" style="padding:4px 10px;font-size:12px">複製</button>
+        </div>
+        <div class="nfc-url" onclick="navigator.clipboard.writeText('${url}').then(()=>alert('已複製！'))">${url}</div>
+      </div>`;
+    }
+    html += '</div>';
+  });
+  $('nfc-cards-list').innerHTML = html || '<div class="empty">請先設定路線並儲存</div>';
+}
+
+window.renderNfcMonitor = async function() {
+  const snap = await getDocs(collection(db,'teams'));
+  const teams = snap.docs.map(d=>({id:d.id,...d.data()}));
+  if (!teams.length) { $('nfc-monitor').innerHTML = '<div class="empty">尚無隊伍掃卡</div>'; return; }
+  $('nfc-monitor').innerHTML = teams.map(t => {
+    const total = NFC_CONFIG.routes?.[t.route]?.stations||9;
+    const isFinish = (t.progress||0) >= total;
+    const dots = Array.from({length:total},(_,i)=>{
+      let cls='pdot'; if(i+1<=t.progress) cls+=i+1===total?' finish':' done'; return `<div class="${cls}"></div>`;
+    }).join('');
+    return `<div class="nfc-team-card ${isFinish?'finished':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <strong>${esc(t.name||t.id)}</strong>
+        <span style="font-size:12px;color:var(--text2)">${t.route?'路線 '+t.route:'未起跑'} ${isFinish?'✅':''}</span>
+      </div>
+      <div class="team-progress">${dots}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">進度 ${t.progress||0}/${total} · 錯誤 ${t.errors||0} · ${t.points||0} 分</div>
+    </div>`;
+  }).join('');
+  $('ov-nfc-done').textContent = teams.filter(t=>(t.progress||0)>=(NFC_CONFIG.routes?.[t.route]?.stations||9)).length;
+}
+
+// ── QUIZ ──
+function renderQuizTab() {
+  const state = QUIZ_STATE;
+  const q = QUIZ_QUESTIONS[(state.qIndex||0) % Math.max(QUIZ_QUESTIONS.length,1)];
+  $('quiz-q-num').textContent = (state.qIndex||0)+1;
+  $('quiz-q-total').textContent = QUIZ_QUESTIONS.length;
+  $('quiz-q-text-admin').textContent = q?.text||'—';
+  const grid = $('quiz-elements-admin');
+  if (q?.elements && state.showElements) {
+    grid.innerHTML = Object.entries(q.elements).map(([k,v])=>`<div class="q-chip"><div class="q-chip-label">${k}</div><div class="q-chip-val">${v}</div></div>`).join('');
+  } else { grid.innerHTML = ''; }
+  // timer
+  const left = state.timerLeft ?? TIMER_SECS;
+  $('quiz-timer-bar').style.width = (left/TIMER_SECS*100)+'%';
+  $('quiz-timer-bar').style.background = left>20?'#1D9E75':left>10?'#EF9F27':'#E24B4A';
+  $('quiz-timer-num').textContent = left;
+  // buzz
+  const banner = $('buzz-banner-admin');
+  if (state.buzzGroup) { banner.classList.add('show'); $('buzz-group-admin').textContent = state.buzzGroup; }
+  else { banner.classList.remove('show'); }
+  // score
+  const groups = Object.values(GROUPS).map(g=>g.name);
+  $('quiz-score-list').innerHTML = groups.map(g=>`
+    <div class="score-row">
+      <div style="font-size:14px;font-weight:500">${esc(g)}</div>
+      <div style="display:flex;gap:6px">${[1,2,3].map(n=>`<button class="star-btn ${(state.scores?.[g]||0)>=n?'active':''}" onclick="quizSetStar('${g}',${n})">★</button>`).join('')}</div>
+    </div>`).join('');
+  // lb
+  const sorted = Object.entries(state.totalScores||{}).sort((a,b)=>b[1]-a[1]);
+  $('quiz-lb-admin').innerHTML = sorted.map(([g,s],i)=>`
+    <div class="lb-row"><div class="lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="lb-name">${esc(g)}</div><div class="lb-score">${s}</div></div>`).join('') || '<div class="empty">尚無積分</div>';
+  // q editor
+  $('quiz-q-editor').innerHTML = QUIZ_QUESTIONS.map((q,i)=>`
+    <div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <strong style="font-size:13px">第 ${i+1} 題</strong>
+        <button onclick="removeQuizQ(${i})" class="btn btn-danger" style="padding:3px 8px;font-size:12px">刪除</button>
+      </div>
+      <input class="input" id="qq-text-${i}" value="${esc(q.text||'')}" placeholder="題目說明" style="margin-bottom:6px">
+      ${Object.entries(q.elements||{}).map(([k,v])=>`
+        <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+          <span style="width:24px;font-size:13px;color:var(--text2)">${k}</span>
+          <input class="input" id="qq-${i}-${k}" value="${esc(v)}" style="margin-bottom:0">
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+async function pushQuizState() { await setDoc(quizRef, QUIZ_STATE); }
+
+window.quizShowQuestion = async function() {
+  QUIZ_STATE.phase='question'; QUIZ_STATE.showElements=true; QUIZ_STATE.buzzGroup=null; QUIZ_STATE.buzzTime=null; QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false;
+  await pushQuizState();
+}
+window.quizStartTimer = async function() {
+  if (QUIZ_STATE.timerRunning) return;
+  QUIZ_STATE.timerRunning=true; await pushQuizState();
+  clearInterval(quizTimerInterval);
+  quizTimerInterval = setInterval(async()=>{
+    QUIZ_STATE.timerLeft=(QUIZ_STATE.timerLeft||TIMER_SECS)-1;
+    if (QUIZ_STATE.timerLeft<=0){QUIZ_STATE.timerLeft=0;QUIZ_STATE.timerRunning=false;clearInterval(quizTimerInterval);}
+    await pushQuizState();
+  },1000);
+}
+window.quizResetTimer = async function() { clearInterval(quizTimerInterval); QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false; await pushQuizState(); }
+window.quizClearBuzz = async function() { QUIZ_STATE.buzzGroup=null; QUIZ_STATE.buzzTime=null; await pushQuizState(); }
+window.quizPrevQ = async function() { clearInterval(quizTimerInterval); QUIZ_STATE.qIndex=Math.max(0,(QUIZ_STATE.qIndex||0)-1); QUIZ_STATE.phase='wait'; QUIZ_STATE.buzzGroup=null; QUIZ_STATE.showElements=false; QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false; await pushQuizState(); }
+window.quizNextQ = async function() { clearInterval(quizTimerInterval); QUIZ_STATE.qIndex=(QUIZ_STATE.qIndex||0)+1; QUIZ_STATE.phase='wait'; QUIZ_STATE.buzzGroup=null; QUIZ_STATE.showElements=false; QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false; await pushQuizState(); }
+window.quizSetStar = async function(group,n) { if(!QUIZ_STATE.scores)QUIZ_STATE.scores={}; QUIZ_STATE.scores[group]=n; await pushQuizState(); }
+window.quizConfirmScore = async function() {
+  if(!QUIZ_STATE.totalScores)QUIZ_STATE.totalScores={};
+  Object.entries(QUIZ_STATE.scores||{}).forEach(([g,s])=>{ QUIZ_STATE.totalScores[g]=(QUIZ_STATE.totalScores[g]||0)+s; });
+  // sync to groups
+  Object.entries(GROUPS).forEach(([id,g])=>{ g.quizPoints=QUIZ_STATE.totalScores[g.name]||0; });
+  await Promise.all([pushQuizState(), setDoc(groupsRef,{groups:GROUPS})]);
+  QUIZ_STATE.scores={};
+  await pushQuizState();
+}
+window.quizShowBoard = async function() { QUIZ_STATE.phase='board'; await pushQuizState(); }
+window.resetQuiz = async function() {
+  if (!confirm('確定重置搶答？')) return;
+  clearInterval(quizTimerInterval);
+  QUIZ_STATE = { phase:'wait', qIndex:0, buzzGroup:null, buzzTime:null, timerLeft:TIMER_SECS, timerRunning:false, scores:{}, totalScores:{}, showElements:false };
+  await pushQuizState();
+}
+window.addQuizQ = function() { QUIZ_QUESTIONS.push({text:'即興情境故事',elements:{人:'',事:'',時:'',地:''}}); renderQuizTab(); }
+window.removeQuizQ = function(i) { QUIZ_QUESTIONS.splice(i,1); renderQuizTab(); }
+window.saveQuizQuestions = async function() {
+  QUIZ_QUESTIONS = QUIZ_QUESTIONS.map((q,i)=>({
+    text: $('qq-text-'+i)?.value||q.text,
+    elements: Object.fromEntries(Object.keys(q.elements||{}).map(k=>([k,$('qq-'+i+'-'+k)?.value||''])))
+  }));
+  await setDoc(quizSettingsRef,{questions:QUIZ_QUESTIONS,timerSecs:TIMER_SECS});
+  alert('✅ 題目已儲存！');
+}
+
+// ── SCORES ──
+window.renderScoresTab = function() {
+  const groups = Object.entries(GROUPS);
+  const sorted = groups.map(([id,g])=>({id,...g,total:(g.nfcPoints||0)+(g.quizPoints||0)+(g.bonusPoints||0)})).sort((a,b)=>b.total-a.total);
+  $('scores-total-lb').innerHTML = sorted.map((g,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-name" style="flex:1">${esc(g.name)}</div>
+      <div style="font-size:12px;color:var(--text2);margin-right:8px">NFC:${g.nfcPoints||0} 搶:${g.quizPoints||0} 加:${g.bonusPoints||0}</div>
+      <div class="lb-score">${g.total}</div>
+    </div>`).join('') || '<div class="empty">尚無組別</div>';
+
+  $('scores-adjust-list').innerHTML = groups.map(([id,g])=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+      <div style="font-weight:700;min-width:80px">${esc(g.name)}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <label style="font-size:12px;color:var(--text2)">NFC</label>
+        <input type="number" id="sc-nfc-${id}" value="${g.nfcPoints||0}" style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <label style="font-size:12px;color:var(--text2)">搶答</label>
+        <input type="number" id="sc-quiz-${id}" value="${g.quizPoints||0}" style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <label style="font-size:12px;color:var(--text2)">加分</label>
+        <input type="number" id="sc-bonus-${id}" value="${g.bonusPoints||0}" style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <button onclick="saveGroupScore('${id}')" class="btn btn-primary" style="padding:5px 12px;font-size:12px">更新</button>
+      </div>
+    </div>`).join('') || '<div class="empty">尚無組別</div>';
+}
+
+window.saveGroupScore = async function(id) {
+  GROUPS[id].nfcPoints = parseInt($('sc-nfc-'+id)?.value)||0;
+  GROUPS[id].quizPoints = parseInt($('sc-quiz-'+id)?.value)||0;
+  GROUPS[id].bonusPoints = parseInt($('sc-bonus-'+id)?.value)||0;
+  await setDoc(groupsRef,{groups:GROUPS});
+  renderScoresTab();
+  renderOverview();
+  alert('✅ 已更新！');
+}
+
+// ── SETTINGS ──
+window.saveBaseSettings = async function() {
+  const name = $('cfg-activity-name').value.trim();
+  TIMER_SECS = parseInt($('cfg-timer-secs').value)||60;
+  await Promise.all([
+    setDoc(baseRef,{activityName:name,timerSecs:TIMER_SECS}),
+    setDoc(quizSettingsRef,{questions:QUIZ_QUESTIONS,timerSecs:TIMER_SECS})
+  ]);
+  alert('✅ 設定已儲存！');
+}
+window.changePw = function() {
+  const p1=$('new-pw').value, p2=$('new-pw2').value;
+  if (!p1) { alert('請輸入新密碼'); return; }
+  if (p1!==p2) { alert('兩次密碼不一致'); return; }
+  adminPw=p1; localStorage.setItem('admin_pw',p1);
+  alert('✅ 密碼已變更！');
+  $('new-pw').value=''; $('new-pw2').value='';
+}
+window.resetAllNfc = async function() {
+  if (!confirm('確定清除所有尋寶進度？')) return;
+  const snap = await getDocs(collection(db,'teams'));
+  await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
   alert('✅ 已清除！');
 }
-
-// ── 設定 ──
-window.saveSiteUrl = function() {
-  let url = document.getElementById('siteUrlInput').value.trim().replace(/\/$/,'');
-  if (!url) { alert('請輸入網址'); return; }
-  if (!url.startsWith('http')) url = 'https://' + url;
-  siteUrl = url;
-  localStorage.setItem('admin_siteUrl', siteUrl);
-  renderActivities();
-  alert('✅ 已儲存！');
+window.resetAllQuiz = async function() {
+  if (!confirm('確定清除所有搶答積分？')) return;
+  QUIZ_STATE.totalScores={};
+  await pushQuizState();
+  alert('✅ 已清除！');
 }
-
-window.changePw = function() {
-  const pw1 = document.getElementById('newPwInput').value;
-  const pw2 = document.getElementById('newPwConfirm').value;
-  if (!pw1) { alert('請輸入新密碼'); return; }
-  if (pw1 !== pw2) { alert('兩次密碼不一致'); return; }
-  adminPw = pw1;
-  localStorage.setItem('admin_pw', adminPw);
-  alert('✅ 密碼已變更！');
-  document.getElementById('newPwInput').value = '';
-  document.getElementById('newPwConfirm').value = '';
-}
-
-window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); }
-
-window.copyText = function(text, el) {
-  navigator.clipboard.writeText(text).then(() => {
-    const hint = el.querySelector('.copy-hint');
-    if (hint) { hint.textContent = '✅ 已複製！'; setTimeout(() => hint.textContent = '點擊複製網址', 1500); }
-  });
-}
-
-window.copyNfcUrl = function() {
-  const cardId = document.getElementById('stageCardId').value.trim();
-  if (siteUrl && cardId) copyText(`${siteUrl}/index.html?card=${cardId}`, document.getElementById('nfcUrlText'));
-}
-
-document.getElementById('pwInput').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-document.getElementById('stageCardId').addEventListener('input', updateNfcPreview);
+window.resetQuizFull = resetAllQuiz;
 </script>
 </body>
 </html>
