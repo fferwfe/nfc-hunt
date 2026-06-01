@@ -75,6 +75,10 @@
 </style>
 </head>
 <body>
+<div id="fb-test" style="position:fixed;top:0;left:0;right:0;background:#fff;padding:12px;font-size:12px;font-family:monospace;z-index:999;border-bottom:2px solid #ccc">
+  Firebase 測試中...
+</div>
+<div style="height:48px"></div>
 <div class="container">
 
   <!-- 設定畫面 -->
@@ -183,7 +187,7 @@ let GROUPS = {};
 let NFC_CONFIG = {};
 
 async function init() {
-  // 先顯示設定畫面，避免空白
+  // 先顯示設定畫面
   $('setup-screen').style.display = '';
 
   try {
@@ -194,104 +198,16 @@ async function init() {
     if (groupSnap.exists()) GROUPS = groupSnap.data().groups || {};
     if (nfcSnap.exists()) NFC_CONFIG = nfcSnap.data();
 
-    // 組別下拉
     const sel = $('group-select');
     sel.innerHTML = '<option value="">— 選擇你的組別 —</option>' +
       Object.values(GROUPS).map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
   } catch(e) {
     console.error('Firebase 讀取失敗:', e);
-    // 即使讀取失敗，還是可以手動輸入組別
   }
 
-  // 已登入
   const saved = localStorage.getItem('player_group');
   if (saved) { myGroup = saved; showMain(); }
 }
-
-window.confirmGroup = function() {
-  const sel = $('group-select').value;
-  const inp = $('group-input').value.trim();
-  myGroup = sel || inp;
-  if (!myGroup) { $('group-input').focus(); return; }
-  localStorage.setItem('player_group', myGroup);
-  syncGroup();
-  showMain();
-}
-
-window.syncGroup = function() {
-  localStorage.setItem('nfc_team', myGroup);
-  localStorage.setItem('quiz_group', myGroup);
-  localStorage.setItem('score_group', myGroup);
-}
-
-function showMain() {
-  $('setup-screen').style.display = 'none';
-  $('main-screen').style.display = '';
-  $('top-group-name').textContent = myGroup;
-  syncGroup();
-  loadScore();
-}
-
-window.loadScore = async function() {
-  // 重新載入 groups（可能有更新）
-  const groupSnap = await getDoc(doc(db,'config','groups'));
-  if (groupSnap.exists()) GROUPS = groupSnap.data().groups || {};
-
-  const groupData = Object.values(GROUPS).find(g=>g.name===myGroup);
-  const nfc = groupData?.nfcPoints || 0;
-  const quiz = groupData?.quizPoints || 0;
-  const bonus = groupData?.bonusPoints || 0;
-  const total = nfc + quiz + bonus;
-
-  $('score-total').textContent = total;
-  $('score-nfc').textContent = nfc;
-  $('score-quiz').textContent = quiz;
-  $('score-bonus').textContent = bonus;
-
-  // 尋寶進度
-  const nfcSnap = await getDocs(collection(db,'teams'));
-  const nfcTeam = nfcSnap.docs.map(d=>d.data()).find(t=>t.name===myGroup);
-  if (nfcTeam && nfcTeam.route) {
-    $('nfc-progress-card').style.display = '';
-    const totalStations = NFC_CONFIG.routes?.[nfcTeam.route]?.stations || 9;
-    $('nfc-route-text').textContent = `路線 ${nfcTeam.route} · 進度 ${nfcTeam.progress||0}/${totalStations}`;
-    const dots = Array.from({length:totalStations},(_,i)=>{
-      let cls='pdot';
-      if(i+1<=(nfcTeam.progress||0)) cls+=i+1===totalStations?' finish':' done';
-      return `<div class="${cls}"></div>`;
-    }).join('');
-    $('pdot-row').innerHTML = dots;
-    $('nfc-meta').textContent = `錯誤 ${nfcTeam.errors||0} 次`;
-  } else {
-    $('nfc-progress-card').style.display = 'none';
-  }
-
-  // 排行榜
-  const sorted = Object.values(GROUPS).map(g=>({
-    name: g.name,
-    total: (g.nfcPoints||0)+(g.quizPoints||0)+(g.bonusPoints||0)
-  })).sort((a,b)=>b.total-a.total);
-
-  $('lb-list').innerHTML = sorted.length ? sorted.map((g,i)=>`
-    <div class="lb-row">
-      <div class="lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
-      <div class="lb-name ${g.name===myGroup?'me':''}">${g.name}${g.name===myGroup?' 👈':''}</div>
-      <div class="lb-score ${g.name===myGroup?'me':''}">${g.total}</div>
-    </div>`).join('') : '<div style="text-align:center;color:var(--text2);padding:16px;font-size:13px">尚無資料</div>';
-}
-
-window.changeGroup = function() {
-  localStorage.removeItem('player_group');
-  myGroup = '';
-  $('setup-screen').style.display = '';
-  $('main-screen').style.display = 'none';
-  $('group-select').value = '';
-  $('group-input').value = '';
-}
-
-$('group-select').addEventListener('change', function(){ if(this.value) $('group-input').value=''; });
-$('group-input').addEventListener('input', function(){ if(this.value) $('group-select').value=''; });
-$('group-input').addEventListener('keydown', e=>{ if(e.key==='Enter') confirmGroup(); });
 
 init();
 </script>
