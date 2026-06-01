@@ -2,40 +2,132 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>尋寶排行榜 · 大螢幕</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>探險手札 · NFC 闖關</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
-  :root{--bg:#0a0a0f;--card:#16161e;--border:#2a2a3a;--text:#f0f0f5;--text2:#a0a0b0;--green:#1D9E75;--red:#b8341f;--gold:#FAC775;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
-  .topbar{padding:20px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-  .topbar-title{font-size:20px;font-weight:900;letter-spacing:3px;}
-  .main{flex:1;padding:32px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;align-content:start;}
-  .team-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
-  .team-card.finished{border-color:var(--green);}
-  .team-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-  .team-name{font-size:18px;font-weight:700;}
-  .route-badge{font-size:12px;background:rgba(255,255,255,0.1);padding:3px 10px;border-radius:99px;}
-  .pdot-row{display:flex;gap:4px;margin-bottom:8px;}
-  .pdot{flex:1;height:10px;background:rgba(255,255,255,0.1);border-radius:2px;}
-  .pdot.done{background:var(--red);}
-  .pdot.finish{background:var(--green);}
-  .team-meta{font-size:12px;color:var(--text2);}
-  .finish-badge{font-size:11px;background:rgba(29,158,117,0.2);color:var(--green);padding:3px 8px;border-radius:99px;font-weight:700;}
-  .empty{text-align:center;padding:80px;color:var(--text2);font-size:18px;grid-column:1/-1;}
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Special+Elite&display=swap');
+  :root {
+    --paper:#f0e3c4;--paper-dark:#d9c89e;--ink:#2b1d12;--ink-soft:#5a4a35;
+    --stamp-red:#b8341f;--stamp-blue:#1f4e7a;--success:#2d6a3e;--error:#a82626;--gold:#b8941f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{min-height:100vh;font-family:'Noto Serif TC',serif;color:var(--ink);background:var(--paper);
+    background-image:radial-gradient(ellipse at top left,rgba(255,255,255,0.4),transparent 60%),
+    radial-gradient(ellipse at bottom right,rgba(120,80,40,0.15),transparent 70%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.08 0 0 0 0.18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .container{max-width:480px;margin:0 auto;padding:24px 20px 60px;min-height:100vh;position:relative;}
+  .header{text-align:center;padding:12px 0 20px;border-bottom:2px dashed var(--ink-soft);margin-bottom:24px;}
+  .header .deco{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:3px;color:var(--ink-soft);margin-bottom:6px;}
+  .header h1{font-size:26px;font-weight:900;letter-spacing:4px;}
+  .header .sub{font-family:'Special Elite',monospace;font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .card{background:rgba(255,250,235,0.6);border:1.5px solid var(--ink-soft);border-radius:2px;padding:20px;margin-bottom:18px;position:relative;box-shadow:2px 3px 0 rgba(0,0,0,0.08);}
+  .card::before{content:'';position:absolute;top:4px;left:4px;right:4px;bottom:4px;border:1px solid rgba(43,29,18,0.2);pointer-events:none;}
+  .setup-label{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:2px;color:var(--ink-soft);margin-bottom:6px;text-transform:uppercase;}
+  .setup-input{width:100%;background:transparent;border:none;border-bottom:2px solid var(--ink);font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--ink);padding:6px 0;outline:none;}
+  .setup-input::placeholder{color:rgba(43,29,18,0.3);}
+  .setup-hint{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.6;}
+  .route-title{font-size:18px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+  .route-title .badge{font-family:'Special Elite',monospace;font-size:13px;background:var(--ink);color:var(--paper);padding:4px 10px;letter-spacing:2px;}
+  .route-path{position:relative;padding:20px 0;margin:0 8px;}
+  .route-line{position:absolute;top:50%;left:4%;right:4%;height:2px;background:repeating-linear-gradient(to right,var(--ink-soft) 0 6px,transparent 6px 10px);z-index:0;}
+  .route-line-fill{position:absolute;top:50%;left:4%;height:3px;background:var(--stamp-red);z-index:1;transition:width 0.6s ease-out;transform:translateY(-1px);box-shadow:0 0 8px rgba(184,52,31,0.4);}
+  .stations{position:relative;display:flex;justify-content:space-between;z-index:2;}
+  .station{width:28px;height:28px;border-radius:50%;background:var(--paper);border:2px solid var(--ink-soft);display:flex;align-items:center;justify-content:center;font-family:'Special Elite',monospace;font-size:12px;font-weight:700;color:var(--ink-soft);transition:all 0.3s;}
+  .station.done{background:var(--stamp-red);border-color:var(--stamp-red);color:var(--paper);transform:scale(1.05);}
+  .station.current{background:var(--ink);border-color:var(--ink);color:var(--paper);animation:pulse 1.5s infinite;}
+  .station.finish{background:var(--success);border-color:var(--success);color:var(--paper);width:32px;height:32px;font-size:14px;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(43,29,18,0.4);}50%{box-shadow:0 0 0 8px rgba(43,29,18,0);}}
+  .progress-text{text-align:center;margin-top:16px;font-family:'Special Elite',monospace;font-size:13px;color:var(--ink-soft);letter-spacing:2px;}
+  .progress-text strong{font-size:22px;color:var(--ink);font-family:'Noto Serif TC';}
+  .message{padding:18px 16px;text-align:center;border:2px solid var(--ink);position:relative;margin-bottom:18px;animation:popIn 0.45s cubic-bezier(0.18,0.89,0.32,1.28);}
+  @keyframes popIn{0%{transform:scale(0.7);opacity:0;}60%{transform:scale(1.04);}100%{transform:scale(1);opacity:1;}}
+  .message.ok{border-color:var(--success);background:rgba(45,106,62,0.08);}
+  .message.error{border-color:var(--error);background:rgba(168,38,38,0.08);}
+  .message.finish{border-color:var(--success);background:linear-gradient(135deg,rgba(45,106,62,0.15),rgba(184,52,31,0.1));border-width:3px;}
+  .message.bonus{border-color:var(--gold);border-width:3px;background:linear-gradient(135deg,rgba(184,148,31,0.18),rgba(184,52,31,0.12));box-shadow:0 0 30px rgba(184,148,31,0.5);}
+  .stamp{display:inline-block;font-family:'Special Elite';font-size:16px;letter-spacing:4px;padding:8px 18px;border:3px solid currentColor;color:var(--stamp-red);transform:rotate(-3deg);margin-bottom:12px;font-weight:700;}
+  .stamp.ok{color:var(--success);}
+  .stamp.err{color:var(--error);}
+  .stamp.bonus{color:var(--gold);border-color:var(--gold);animation:bonusGlow 1.2s infinite alternate;}
+  @keyframes bonusGlow{from{box-shadow:0 0 0 rgba(184,148,31,0);}to{box-shadow:0 0 16px rgba(184,148,31,0.6);}}
+  .message-title{font-size:20px;font-weight:700;margin-bottom:6px;}
+  .message-body{font-size:14px;line-height:1.7;color:var(--ink-soft);}
+  .big-station{font-family:'Special Elite';font-size:88px;font-weight:700;line-height:1;color:var(--ink);margin:8px 0 4px;}
+  .big-station .of{font-size:28px;color:var(--ink-soft);}
+  .bonus-name{font-size:22px;font-weight:900;color:var(--gold);margin:8px 0 4px;}
+  .points-tag{display:inline-block;margin:8px 0;padding:6px 16px;background:rgba(184,148,31,0.15);border:1.5px solid var(--gold);font-family:'Special Elite';font-size:14px;letter-spacing:2px;color:var(--gold);}
+  .total-points{font-size:13px;color:var(--ink-soft);margin-top:6px;}
+  .riddle-box{margin-top:14px;padding:16px;background:rgba(43,29,18,0.06);border:1.5px solid var(--ink-soft);text-align:left;}
+  .riddle-label{font-family:'Special Elite';font-size:11px;letter-spacing:2px;color:var(--stamp-red);margin-bottom:10px;text-align:center;}
+  .riddle-text{font-size:19px;line-height:1.9;color:var(--ink);font-weight:700;text-align:center;padding:8px 0;letter-spacing:0.5px;}
+  .hint-btn{display:block;width:100%;margin-top:12px;padding:8px;background:transparent;border:1px dashed var(--ink-soft);color:var(--ink-soft);font-family:'Noto Serif TC';font-size:13px;cursor:pointer;letter-spacing:1px;}
+  .hint-text{margin-top:10px;padding:10px 12px;background:rgba(184,148,31,0.12);border-left:3px solid #b8941f;font-size:14px;color:var(--ink-soft);line-height:1.6;}
+  .btn{display:block;width:100%;padding:14px;background:var(--ink);color:var(--paper);border:none;font-family:'Noto Serif TC';font-size:16px;font-weight:700;letter-spacing:3px;cursor:pointer;text-align:center;margin-top:12px;}
+  .btn:active{transform:translateY(1px);}
+  .btn-link{background:transparent;color:var(--ink-soft);text-decoration:underline;font-size:13px;letter-spacing:1px;padding:8px;margin-top:4px;display:block;text-align:center;cursor:pointer;border:none;width:100%;}
+  @keyframes confetti-fall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+  .confetti{position:fixed;width:8px;height:14px;pointer-events:none;animation:confetti-fall 3s linear forwards;z-index:100;}
+  @keyframes shake{0%,100%{transform:translateX(0);}10%,30%,50%,70%,90%{transform:translateX(-6px);}20%,40%,60%,80%{transform:translateX(6px);}}
+  .shake{animation:shake 0.5s;}
+  @keyframes sparkleAnim{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0);}}
+  .sparkle{position:fixed;pointer-events:none;font-size:20px;animation:sparkleAnim 1.4s ease-out forwards;z-index:200;}
+  .history-item{display:flex;justify-content:space-between;font-family:'Special Elite';font-size:12px;padding:4px 0;border-bottom:1px dotted var(--ink-soft);}
+  .history-item.err{color:var(--error);}
+  .footer{text-align:center;margin-top:30px;font-family:'Special Elite';font-size:10px;letter-spacing:2px;color:var(--ink-soft);opacity:0.6;}
+  #historyCard{display:none;}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="topbar-title">🗺️ 尋寶進度</div>
-  <div style="font-size:13px;color:var(--text2)" id="last-update">—</div>
+<div class="container">
+  <div class="header">
+    <div class="deco">— NFC CHECKPOINT · 探 險 手 札 —</div>
+    <h1>探 險 手 札</h1>
+    <div class="sub" id="activityTitle">NFC ROUTE CHALLENGE</div>
+  </div>
+
+  <div id="setupCard" class="card" style="display:none">
+    <div class="setup-label">★ 隊伍名稱 / Team Name</div>
+    <input id="teamInput" class="setup-input" type="text" placeholder="輸入你們的隊名" maxlength="20">
+    <div class="setup-hint">輸入隊名後即可開始闖關。</div>
+    <button class="btn" onclick="saveTeam()">確 認 開 始</button>
+  </div>
+
+  <div id="mainView" style="display:none">
+    <div id="messageCard" style="display:none"></div>
+
+    <div class="card">
+      <div class="route-title">
+        <span id="teamName">—</span>
+        <span id="routeBadge" class="badge">路線 —</span>
+      </div>
+      <div class="route-path">
+        <div class="route-line"></div>
+        <div id="routeLineFill" class="route-line-fill" style="width:0%"></div>
+        <div id="stations" class="stations"></div>
+      </div>
+      <div class="progress-text">
+        進度 <strong id="progressNum">0</strong> / <span id="totalNum">9</span>
+      </div>
+      <div class="progress-text" style="margin-top:6px">
+        總分 <strong id="totalPointsDisplay">0</strong> 分
+      </div>
+    </div>
+
+    <div id="historyCard" class="card">
+      <div class="setup-label">掃卡紀錄</div>
+      <div id="historyList"></div>
+    </div>
+
+    <button class="btn-link" onclick="changeTeam()">更換隊伍名稱</button>
+  </div>
+
+  <div class="footer">— 探險手札 · NFC ROUTE CHALLENGE —</div>
 </div>
-<div class="main" id="main-grid"><div class="empty">載入中...</div></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getFirestore, doc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBCtE0kZWmyt2UiAq2as5g65pfKIzm9QQE",
   authDomain: "nfc-hunt-a9cb3.firebaseapp.com",
@@ -44,36 +136,264 @@ const firebaseConfig = {
   messagingSenderId: "376155129888",
   appId: "1:376155129888:web:8d4d214f50777580325445"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
 const $ = id => document.getElementById(id);
-let NFC_CONFIG = {};
+const params = new URLSearchParams(location.search);
+const scanRoute  = params.get('r');
+const scanStation = params.get('n');
+const scanKey    = params.get('k');
+const scanBonus  = params.get('b');
+const isScanMode = !!(scanRoute && scanStation) || !!scanBonus;
+
+let CONFIG = null;
+
+function getTeam() { return localStorage.getItem('nfc_team') || ''; }
+function setTeam(n) { localStorage.setItem('nfc_team', n); }
+
+async function loadConfig() {
+  const snap = await getDoc(doc(db, 'config', 'game'));
+  if (snap.exists()) {
+    CONFIG = snap.data();
+    if (CONFIG.title) $('activityTitle').textContent = CONFIG.title;
+  }
+}
 
 async function init() {
-  const nfcSnap = await getDoc(doc(db,'config','nfc'));
-  if (nfcSnap.exists()) NFC_CONFIG = nfcSnap.data();
+  await loadConfig();
+  const team = getTeam();
+  if (!team) {
+    $('setupCard').style.display = 'block';
+    $('mainView').style.display = 'none';
+    return;
+  }
+  $('setupCard').style.display = 'none';
+  $('mainView').style.display = 'block';
+  $('teamName').textContent = team;
 
-  onSnapshot(collection(db,'teams'), snap => {
-    const teams = snap.docs.map(d=>({id:d.id,...d.data()}));
-    teams.sort((a,b)=>(b.progress||0)-(a.progress||0));
-    const now = new Date();
-    $('last-update').textContent = '更新：'+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-    if (!teams.length) { $('main-grid').innerHTML='<div class="empty">等待玩家掃卡...</div>'; return; }
-    $('main-grid').innerHTML = teams.map(t=>{
-      const total=NFC_CONFIG.routes?.[t.route]?.stations||9;
-      const isFinish=(t.progress||0)>=total;
-      const dots=Array.from({length:total},(_,i)=>{let cls='pdot';if(i+1<=(t.progress||0))cls+=i+1===total?' finish':' done';return`<div class="${cls}"></div>`;}).join('');
-      return `<div class="team-card ${isFinish?'finished':''}">
-        <div class="team-head">
-          <div class="team-name">${t.name||t.id}</div>
-          ${isFinish?'<span class="finish-badge">✅ 完成</span>':`<span class="route-badge">${t.route?'路線 '+t.route:'未起跑'}</span>`}
-        </div>
-        <div class="pdot-row">${dots}</div>
-        <div class="team-meta">${t.progress||0}/${total} 站 · ${t.points||0} 分 · 錯誤 ${t.errors||0}</div>
-      </div>`;
-    }).join('');
-  });
+  if (isScanMode) {
+    await doScan(team);
+  } else {
+    await loadTeamState(team);
+  }
+  // 清除 URL 參數，避免重整重複掃
+  if (isScanMode) window.history.replaceState({}, '', location.pathname);
 }
+
+async function doScan(teamId) {
+  const teamRef = doc(db, 'teams', teamId);
+  const snap = await getDoc(teamRef);
+  let team = snap.exists() ? snap.data() : { name: teamId, route: null, progress: 0, points: 0, errors: 0, history: [], startTime: null, finishTime: null };
+
+  // ── 彩蛋卡 ──
+  if (scanBonus) {
+    const bonusCfg = CONFIG?.bonuses?.[scanBonus];
+    if (!bonusCfg) { showMessage('error','✗ 卡片無效','這張卡片無法識別'); return; }
+    const alreadyFound = (team.bonusesFound || []).includes(scanBonus);
+    if (alreadyFound) { showMessage('error','已領過了','這個彩蛋你們已經找到過了！'); renderProgress(team); return; }
+    team.bonusesFound = [...(team.bonusesFound || []), scanBonus];
+    team.points = (team.points || 0) + (bonusCfg.points || 0);
+    await setDoc(teamRef, team);
+    showScanResult({ ok: true, bonus: true, bonusName: bonusCfg.name, bonusPoints: bonusCfg.points, bonusMessage: bonusCfg.message, totalPoints: team.points });
+    renderProgress(team);
+    launchSparkles();
+    return;
+  }
+
+  const route = scanRoute;
+  const n = parseInt(scanStation);
+  const key = scanKey;
+  const routeCfg = CONFIG?.routes?.[route];
+  const total = routeCfg?.stations || 9;
+
+  // 驗證 key
+  if (routeCfg?.keys && !routeCfg.keys.includes(key)) {
+    showScanResult({ ok: false, reason: 'bad_key', msg: '卡片驗證失敗，請找主辦人確認' });
+    return;
+  }
+
+  // 鎖路線
+  if (!team.route) {
+    team.route = route;
+    team.progress = 0;
+    team.startTime = Date.now();
+  }
+
+  if (team.route !== route) {
+    team.errors = (team.errors||0)+1;
+    team.history = [...(team.history||[]), { time: Date.now(), station: n, result: 'wrong_route' }];
+    await setDoc(teamRef, team);
+    showScanResult({ ok: false, reason: 'wrong_route', msg: `這不是你們的路線！你們是 ${team.route} 隊` });
+    renderProgress(team);
+    return;
+  }
+
+  if (team.progress >= total) {
+    showScanResult({ ok: false, reason: 'already_finished', msg: '你們已經完賽囉！🎉' });
+    renderProgress(team);
+    return;
+  }
+
+  const expected = (team.progress || 0) + 1;
+  if (n !== expected) {
+    team.errors = (team.errors||0)+1;
+    team.history = [...(team.history||[]), { time: Date.now(), station: n, result: 'wrong_order' }];
+    await setDoc(teamRef, team);
+    showScanResult({ ok: false, reason: 'wrong_order', msg: n < expected ? `這張已掃過了！下一站應該找第 ${expected} 站` : `找錯囉！現在應該找第 ${expected} 站` });
+    renderProgress(team);
+    return;
+  }
+
+  // ✅ 正確
+  const stationPoints = routeCfg?.stationPoints || 10;
+  team.progress = n;
+  team.points = (team.points || 0) + stationPoints;
+  team.history = [...(team.history||[]), { time: Date.now(), station: n, result: 'ok' }];
+  const isFinish = n >= total;
+  if (isFinish) team.finishTime = Date.now();
+  await setDoc(teamRef, team);
+
+  const riddles = CONFIG?.stationHints?.[route] || [];
+  const riddle = riddles[n-1] || { riddle: '前往下一個地點', hint: '' };
+  showScanResult({ ok: true, station: n, total, isFinish, riddle, earned: stationPoints, totalPoints: team.points });
+  renderProgress(team);
+  if (isFinish) launchConfetti();
+}
+
+async function loadTeamState(teamId) {
+  const snap = await getDoc(doc(db, 'teams', teamId));
+  if (snap.exists()) renderProgress(snap.data());
+  else { $('routeBadge').textContent = '尚未開始'; renderEmptyPath(9); }
+}
+
+function showScanResult(data) {
+  const card = $('messageCard');
+  card.style.display = 'block';
+  card.className = 'message';
+
+  if (data.ok) {
+    if (data.bonus) {
+      card.classList.add('bonus');
+      card.innerHTML = `<div class="stamp bonus">★ BONUS ★</div><div class="message-title">🥚 發現隱藏彩蛋！</div><div class="bonus-name">${data.bonusName}</div><div class="big-station" style="color:var(--gold)">+${data.bonusPoints}<span class="of">分</span></div><div class="message-body">${data.bonusMessage||''}</div><div class="total-points">目前總分 <strong>${data.totalPoints}</strong></div>`;
+      return;
+    }
+    const r = data.riddle || {};
+    const earnedHtml = data.earned ? `<div class="points-tag">+${data.earned} 分　|　總分 ${data.totalPoints}</div>` : '';
+    if (data.isFinish) {
+      card.classList.add('finish');
+      card.innerHTML = `<div class="stamp ok">COMPLETED</div><div class="message-title">🏆 全部完成！</div><div class="big-station">${data.station}<span class="of">/${data.total}</span></div>${earnedHtml}<div class="message-body">${r.riddle||'恭喜抵達終點！'}</div>`;
+      launchConfetti();
+    } else {
+      card.classList.add('ok');
+      const hasHint = r.hint && r.hint.length;
+      card.innerHTML = `<div class="stamp ok">PASSED ✓</div><div class="message-title">第 ${data.station} 站 · 通過</div><div class="big-station">${data.station}<span class="of">/${data.total}</span></div>${earnedHtml}<div class="riddle-box"><div class="riddle-label">⊳ 下一站謎題 · 前往第 ${data.station+1} 站</div><div class="riddle-text">${r.riddle||'前往下一個地點'}</div>${hasHint?`<button class="hint-btn" onclick="toggleHint(this)">💡 看不懂？點開小提示</button><div class="hint-text" style="display:none">${r.hint}</div>`:''}</div>`;
+    }
+  } else {
+    card.classList.add('error');
+    card.classList.add('shake');
+    setTimeout(() => card.classList.remove('shake'), 500);
+    let title = '✗ 找錯卡片了';
+    if (data.reason === 'wrong_route') title = '✗ 路線錯誤';
+    else if (data.reason === 'already_finished') title = '🎉 已完賽';
+    else if (data.reason === 'bad_key') title = '✗ 卡片無效';
+    card.innerHTML = `<div class="stamp err">REJECTED</div><div class="message-title">${title}</div><div class="message-body">${data.msg}</div>`;
+    if (navigator.vibrate) navigator.vibrate([100,50,100]);
+  }
+}
+
+function showMessage(type, title, body) {
+  const card = $('messageCard');
+  card.style.display = 'block';
+  card.className = 'message ' + type;
+  card.innerHTML = `<div class="stamp ${type==='ok'?'ok':'err'}">${type==='ok'?'NOTICE':'ERROR'}</div><div class="message-title">${title}</div><div class="message-body">${body}</div>`;
+}
+
+function renderEmptyPath(total) {
+  const wrap = $('stations'); wrap.innerHTML = '';
+  for (let i=1;i<=total;i++) { const d=document.createElement('div'); d.className='station'; d.textContent=i; wrap.appendChild(d); }
+  $('totalNum').textContent = total;
+}
+
+function renderProgress(team) {
+  $('routeBadge').textContent = team.route ? ('路線 '+team.route) : '尚未開始';
+  $('teamName').textContent = team.name || getTeam();
+  const total = CONFIG?.routes?.[team.route]?.stations || team.total || 9;
+  $('totalNum').textContent = total;
+  $('progressNum').textContent = team.progress || 0;
+  $('totalPointsDisplay').textContent = team.points || 0;
+  const wrap = $('stations'); wrap.innerHTML = '';
+  for (let i=1;i<=total;i++) {
+    const d=document.createElement('div'); d.className='station';
+    if (i<=team.progress) d.classList.add('done');
+    if (i===team.progress+1) d.classList.add('current');
+    if (i===total && i<=team.progress) { d.classList.remove('done'); d.classList.add('finish'); d.textContent='★'; }
+    else d.textContent=i;
+    wrap.appendChild(d);
+  }
+  const pct = total>1 ? ((team.progress||0)/(total-1))*92 : 0;
+  $('routeLineFill').style.width = Math.max(0,pct)+'%';
+  if (team.history && team.history.length) {
+    $('historyCard').style.display = 'block';
+    const list = $('historyList');
+    list.innerHTML = team.history.slice(-8).reverse().map(h => {
+      const t = new Date(h.time);
+      const tStr = String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+      return h.result==='ok'
+        ? `<div class="history-item"><span>✓ 第 ${h.station} 站</span><span>${tStr}</span></div>`
+        : `<div class="history-item err"><span>✗ 第 ${h.station} 站（${h.result}）</span><span>${tStr}</span></div>`;
+    }).join('');
+  }
+}
+
+window.saveTeam = function() {
+  const name = $('teamInput').value.trim();
+  if (!name) { alert('請輸入隊伍名稱'); return; }
+  setTeam(name);
+  location.reload();
+}
+window.changeTeam = function() {
+  if (confirm('要更換隊伍名稱嗎？目前進度會保留在伺服器，但這支手機需要重新輸入。')) {
+    localStorage.removeItem('nfc_team');
+    location.href = location.pathname;
+  }
+}
+window.toggleHint = function(btn) {
+  const hint = btn.nextElementSibling;
+  if (hint.style.display==='none') { hint.style.display='block'; btn.textContent='💡 收起提示'; }
+  else { hint.style.display='none'; btn.textContent='💡 看不懂？點開小提示'; }
+}
+
+function launchSparkles() {
+  const symbols=['✨','★','💰','🌟','⭐'];
+  const cx=window.innerWidth/2, cy=window.innerHeight/2;
+  for (let i=0;i<25;i++) {
+    const s=document.createElement('div'); s.className='sparkle';
+    s.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+    s.style.left=cx+'px'; s.style.top=cy+'px';
+    const angle=Math.random()*Math.PI*2, dist=100+Math.random()*250;
+    s.style.setProperty('--dx',Math.cos(angle)*dist+'px');
+    s.style.setProperty('--dy',Math.sin(angle)*dist+'px');
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1600);
+  }
+}
+function launchConfetti() {
+  const colors=['#b8341f','#2d6a3e','#1f4e7a','#d4a017','#2b1d12'];
+  for (let i=0;i<60;i++) {
+    const c=document.createElement('div'); c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDelay=Math.random()*1.5+'s';
+    c.style.animationDuration=(2.5+Math.random()*1.5)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),5000);
+  }
+  if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Enter' && $('setupCard').style.display!=='none') saveTeam(); });
 init();
 </script>
 </body>
