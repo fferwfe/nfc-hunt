@@ -109,7 +109,7 @@
 
     <div class="activity-section">
       <div class="activity-label">參加活動</div>
-      <a href="../player-firebase.html" class="activity-btn" onclick="syncGroup()">
+      <a id="nfc-link" href="../player-firebase.html" class="activity-btn" onclick="syncGroup(); setNfcLink()">
         <div class="activity-btn-icon nfc">🗺️</div>
         <div class="activity-btn-body">
           <div class="activity-btn-title">NFC 尋寶闖關</div>
@@ -171,6 +171,11 @@ window.syncGroup = function() {
   localStorage.setItem('quiz_group', myGroup);
 }
 
+window.setNfcLink = function() {
+  const link = document.getElementById('nfc-link');
+  if (link && myGroup) link.href = '../player-firebase.html?team=' + encodeURIComponent(myGroup);
+}
+
 window.changeGroup = function() {
   localStorage.removeItem('player_group');
   myGroup = '';
@@ -184,6 +189,9 @@ function showMain() {
   $('setup-screen').style.display = 'none';
   $('main-screen').style.display = '';
   $('top-group-name').textContent = myGroup;
+  // pre-set NFC link with team param
+  const nfcLink = document.getElementById('nfc-link');
+  if (nfcLink && myGroup) nfcLink.href = '../player-firebase.html?team=' + encodeURIComponent(myGroup);
   loadScore();
 }
 
