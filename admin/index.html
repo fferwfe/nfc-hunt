@@ -410,7 +410,10 @@ window.addGroup = async function() {
   const route = $('new-group-route').value || null;
   const id = genId();
   GROUPS[id] = { name, route, nfcPoints:0, quizPoints:0, bonusPoints:0 };
-  await setDoc(groupsRef, { groups: GROUPS });
+  await Promise.all([
+    setDoc(groupsRef, { groups: GROUPS }),
+    syncGroupsToQuizSettings()
+  ]);
   $('new-group-name').value = '';
   renderGroupsTab();
   renderOverview();
@@ -419,7 +422,10 @@ window.addGroup = async function() {
 window.deleteGroup = async function(id) {
   if (!confirm('確定刪除？')) return;
   delete GROUPS[id];
-  await setDoc(groupsRef, { groups: GROUPS });
+  await Promise.all([
+    setDoc(groupsRef, { groups: GROUPS }),
+    syncGroupsToQuizSettings()
+  ]);
   renderGroupsTab();
 }
 
@@ -557,8 +563,12 @@ function renderQuizTab() {
   if (q?.elements && state.showElements) {
     grid.innerHTML = Object.entries(q.elements).map(([k,v])=>`<div class="q-chip"><div class="q-chip-label">${k}</div><div class="q-chip-val">${v}</div></div>`).join('');
   } else { grid.innerHTML = ''; }
-  // timer
-  const left = state.timerLeft ?? TIMER_SECS;
+  // timer - self-calculate from timerStartedAt
+  let left = state.timerLeft ?? TIMER_SECS;
+  if (state.timerRunning && state.timerStartedAt) {
+    const elapsed = Math.floor((Date.now() - state.timerStartedAt) / 1000);
+    left = Math.max(0, (state.timerSnapshotLeft ?? TIMER_SECS) - elapsed);
+  }
   $('quiz-timer-bar').style.width = (left/TIMER_SECS*100)+'%';
   $('quiz-timer-bar').style.background = left>20?'#1D9E75':left>10?'#EF9F27':'#E24B4A';
   $('quiz-timer-num').textContent = left;
@@ -595,21 +605,34 @@ function renderQuizTab() {
 
 async function pushQuizState() { await setDoc(quizRef, QUIZ_STATE); }
 
+async function syncGroupsToQuizSettings() {
+  const groupNames = Object.values(GROUPS).map(g => g.name).filter(Boolean);
+  await setDoc(quizSettingsRef, { questions: QUIZ_QUESTIONS, timerSecs: TIMER_SECS, groups: groupNames });
+}
+
 window.quizShowQuestion = async function() {
   QUIZ_STATE.phase='question'; QUIZ_STATE.showElements=true; QUIZ_STATE.buzzGroup=null; QUIZ_STATE.buzzTime=null; QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false;
   await pushQuizState();
 }
 window.quizStartTimer = async function() {
   if (QUIZ_STATE.timerRunning) return;
-  QUIZ_STATE.timerRunning=true; await pushQuizState();
+  QUIZ_STATE.timerRunning = true;
+  QUIZ_STATE.timerStartedAt = Date.now();
+  QUIZ_STATE.timerSnapshotLeft = QUIZ_STATE.timerLeft ?? TIMER_SECS;
+  await pushQuizState();
   clearInterval(quizTimerInterval);
-  quizTimerInterval = setInterval(async()=>{
-    QUIZ_STATE.timerLeft=(QUIZ_STATE.timerLeft||TIMER_SECS)-1;
-    if (QUIZ_STATE.timerLeft<=0){QUIZ_STATE.timerLeft=0;QUIZ_STATE.timerRunning=false;clearInterval(quizTimerInterval);}
+  quizTimerInterval = setInterval(async () => {
+    const elapsed = Math.floor((Date.now() - QUIZ_STATE.timerStartedAt) / 1000);
+    QUIZ_STATE.timerLeft = Math.max(0, QUIZ_STATE.timerSnapshotLeft - elapsed);
+    if (QUIZ_STATE.timerLeft <= 0) {
+      QUIZ_STATE.timerLeft = 0;
+      QUIZ_STATE.timerRunning = false;
+      clearInterval(quizTimerInterval);
+    }
     await pushQuizState();
-  },1000);
+  }, 1000);
 }
-window.quizResetTimer = async function() { clearInterval(quizTimerInterval); QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false; await pushQuizState(); }
+window.quizResetTimer = async function() { clearInterval(quizTimerInterval); QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false; QUIZ_STATE.timerStartedAt=null; QUIZ_STATE.timerSnapshotLeft=null; await pushQuizState(); }
 window.quizClearBuzz = async function() { QUIZ_STATE.buzzGroup=null; QUIZ_STATE.buzzTime=null; await pushQuizState(); }
 window.quizPrevQ = async function() { clearInterval(quizTimerInterval); QUIZ_STATE.qIndex=Math.max(0,(QUIZ_STATE.qIndex||0)-1); QUIZ_STATE.phase='wait'; QUIZ_STATE.buzzGroup=null; QUIZ_STATE.showElements=false; QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false; await pushQuizState(); }
 window.quizNextQ = async function() { clearInterval(quizTimerInterval); QUIZ_STATE.qIndex=(QUIZ_STATE.qIndex||0)+1; QUIZ_STATE.phase='wait'; QUIZ_STATE.buzzGroup=null; QUIZ_STATE.showElements=false; QUIZ_STATE.timerLeft=TIMER_SECS; QUIZ_STATE.timerRunning=false; await pushQuizState(); }
@@ -637,7 +660,8 @@ window.saveQuizQuestions = async function() {
     text: $('qq-text-'+i)?.value||q.text,
     elements: Object.fromEntries(Object.keys(q.elements||{}).map(k=>([k,$('qq-'+i+'-'+k)?.value||''])))
   }));
-  await setDoc(quizSettingsRef,{questions:QUIZ_QUESTIONS,timerSecs:TIMER_SECS});
+  const groupNames = Object.values(GROUPS).map(g => g.name).filter(Boolean);
+  await setDoc(quizSettingsRef, { questions: QUIZ_QUESTIONS, timerSecs: TIMER_SECS, groups: groupNames });
   alert('✅ 題目已儲存！');
 }
 
@@ -701,9 +725,10 @@ window.adjustScore = async function(id, field, delta) {
 window.saveBaseSettings = async function() {
   const name = $('cfg-activity-name').value.trim();
   TIMER_SECS = parseInt($('cfg-timer-secs').value)||60;
+  const groupNames = Object.values(GROUPS).map(g => g.name).filter(Boolean);
   await Promise.all([
-    setDoc(baseRef,{activityName:name,timerSecs:TIMER_SECS}),
-    setDoc(quizSettingsRef,{questions:QUIZ_QUESTIONS,timerSecs:TIMER_SECS})
+    setDoc(baseRef, { activityName: name, timerSecs: TIMER_SECS }),
+    setDoc(quizSettingsRef, { questions: QUIZ_QUESTIONS, timerSecs: TIMER_SECS, groups: groupNames })
   ]);
   alert('✅ 設定已儲存！');
 }
@@ -732,31 +757,9 @@ window.resetQuizFull = resetAllQuiz;
 // ── PICKER ──
 window.startPick = function() {
   if (!QUIZ_STATE.buzzGroup) { alert('還沒有組別搶答！'); return; }
-  const card = $('picker-card');
-  card.style.display = '';
-  $('picker-result').textContent = '';
-
-  // 從搶答組的成員中抽（若有設定成員）或直接顯示組名
-  const groupData = Object.values(GROUPS).find(g=>g.name===QUIZ_STATE.buzzGroup);
-  const members = groupData?.members || [];
-
-  let count = 0;
-  const allNames = members.length ? members : [QUIZ_STATE.buzzGroup];
-  const allGroups = Object.values(GROUPS).map(g=>g.name);
-  const displayPool = members.length ? members : allGroups;
-
-  const interval = setInterval(()=>{
-    const r = displayPool[Math.floor(Math.random()*displayPool.length)];
-    $('picker-spinning').textContent = r;
-    count++;
-    if (count > 24) {
-      clearInterval(interval);
-      const winner = allNames[Math.floor(Math.random()*allNames.length)];
-      $('picker-spinning').textContent = winner;
-      $('picker-result').textContent = `從「${QUIZ_STATE.buzzGroup}」中選出上台者`;
-      if (navigator.vibrate) navigator.vibrate([100,50,200]);
-    }
-  }, 80);
+  // 搶答組組名就是代表，直接 alert 提示
+  alert(`🔔 搶答組：${QUIZ_STATE.buzzGroup}`);
+  if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
 }
 </script>
 </body>
