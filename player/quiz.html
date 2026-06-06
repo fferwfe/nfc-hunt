@@ -119,24 +119,37 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const $ = id => document.getElementById(id);
 
-let myGroup = localStorage.getItem('quiz_group') || '';
+let myGroup = localStorage.getItem('quiz_group') || localStorage.getItem('player_group') || '';
 let gameState = {};
 let TIMER_SECS = 60;
 
 const gameRef = doc(db,'quiz','game');
 const settingsRef = doc(db,'quiz','settings');
+const groupsConfigRef = doc(db,'config','groups');
 
 async function init() {
-  // 載入組別清單
-  const snap = await getDoc(settingsRef);
-  if (snap.exists()) {
-    const d = snap.data();
-    if (d.groups) {
-      const sel = $('group-select');
-      sel.innerHTML = '<option value="">— 選擇組別 —</option>' + d.groups.map(g=>`<option value="${g}">${g}</option>`).join('');
-    }
-    if (d.timerSecs) TIMER_SECS = d.timerSecs;
+  // 載入組別清單（優先從 config/groups，fallback 到 quiz/settings.groups）
+  const [groupsSnap, settSnap] = await Promise.all([
+    getDoc(groupsConfigRef),
+    getDoc(settingsRef)
+  ]);
+
+  let groupNames = [];
+  if (groupsSnap.exists()) {
+    groupNames = Object.values(groupsSnap.data().groups || {}).map(g => g.name).filter(Boolean);
   }
+  if (!groupNames.length && settSnap.exists() && settSnap.data().groups) {
+    groupNames = settSnap.data().groups;
+  }
+  if (settSnap.exists() && settSnap.data().timerSecs) TIMER_SECS = settSnap.data().timerSecs;
+
+  if (groupNames.length) {
+    const sel = $('group-select');
+    sel.innerHTML = '<option value="">— 選擇組別 —</option>' + groupNames.map(g=>`<option value="${g}">${g}</option>`).join('');
+    // 自動選中已存的組別
+    if (myGroup) sel.value = myGroup;
+  }
+  if (myGroup) $('group-input').value = myGroup;
 
   if (myGroup) {
     showGame();
@@ -191,8 +204,12 @@ function renderGame() {
   $('board-state').style.display = phase==='board' ? '' : 'none';
 
   if (phase === 'question') {
-    // timer
-    const left = gameState.timerLeft ?? TIMER_SECS;
+    // timer - self-calculate from timerStartedAt so we don't rely on admin's interval
+    let left = gameState.timerLeft ?? TIMER_SECS;
+    if (gameState.timerRunning && gameState.timerStartedAt) {
+      const elapsed = Math.floor((Date.now() - gameState.timerStartedAt) / 1000);
+      left = Math.max(0, (gameState.timerSnapshotLeft ?? TIMER_SECS) - elapsed);
+    }
     const pct = (left / TIMER_SECS) * 100;
     const bar = $('timer-bar');
     bar.style.width = pct+'%';
