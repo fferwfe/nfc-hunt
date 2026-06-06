@@ -157,10 +157,15 @@ function getTeam() { return localStorage.getItem('nfc_team') || ''; }
 function setTeam(n) { localStorage.setItem('nfc_team', n); }
 
 async function loadConfig() {
-  const snap = await getDoc(doc(db, 'config', 'game'));
-  if (snap.exists()) {
-    CONFIG = snap.data();
-    if (CONFIG.title) $('activityTitle').textContent = CONFIG.title;
+  const [nfcSnap, baseSnap] = await Promise.all([
+    getDoc(doc(db, 'config', 'nfc')),
+    getDoc(doc(db, 'config', 'base'))
+  ]);
+  CONFIG = {};
+  if (nfcSnap.exists()) Object.assign(CONFIG, nfcSnap.data());
+  if (baseSnap.exists()) {
+    const bd = baseSnap.data();
+    if (bd.activityName) $('activityTitle').textContent = bd.activityName;
   }
 }
 
