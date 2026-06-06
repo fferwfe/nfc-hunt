@@ -10,8 +10,6 @@
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 60px;}
   .container{max-width:440px;margin:0 auto;}
-
-  /* 設定畫面 */
   .setup-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px 0;}
   .setup-card{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:32px 24px;text-align:center;width:100%;}
   .setup-icon{font-size:48px;margin-bottom:14px;}
@@ -21,17 +19,13 @@
   .input:focus{border-color:var(--green);}
   select.input{background:var(--card);}
   .or-line{font-size:12px;color:var(--text2);margin:2px 0 10px;text-align:center;}
-  .confirm-btn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:'Noto Sans TC';font-size:16px;font-weight:700;cursor:pointer;transition:background 0.15s;}
+  .confirm-btn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:'Noto Sans TC';font-size:16px;font-weight:700;cursor:pointer;}
   .confirm-btn:active{background:var(--green2);}
-
-  /* 主畫面 */
   .main-wrap{display:none;}
   .top-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 0 20px;}
   .top-group{font-size:18px;font-weight:900;}
   .top-badge{background:rgba(29,158,117,0.1);color:var(--green);font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-left:8px;}
   .change-btn{background:none;border:none;color:var(--text2);font-size:12px;text-decoration:underline;cursor:pointer;padding:4px;}
-
-  /* 積分卡 */
   .score-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:22px 20px;margin-bottom:14px;}
   .score-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:14px;}
   .score-total{font-size:64px;font-weight:900;color:var(--green);line-height:1;text-align:center;}
@@ -40,19 +34,15 @@
   .breakdown-item{background:var(--bg);border-radius:10px;padding:12px 8px;text-align:center;}
   .breakdown-num{font-size:22px;font-weight:700;}
   .breakdown-label{font-size:11px;color:var(--text2);margin-top:3px;}
-
-  /* 進度 */
   .progress-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px 20px;margin-bottom:14px;}
   .pdot-row{display:flex;gap:3px;margin:8px 0 4px;}
   .pdot{flex:1;height:9px;background:var(--bg);border:1px solid var(--border);border-radius:2px;}
   .pdot.done{background:var(--red);border-color:var(--red);}
   .pdot.finish{background:var(--green);border-color:var(--green);}
-
-  /* 活動按鈕 */
   .activity-section{margin-bottom:14px;}
   .activity-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
   .activity-btn{display:flex;align-items:center;gap:16px;background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:10px;cursor:pointer;text-decoration:none;color:var(--text);transition:all 0.15s;}
-  .activity-btn:active,.activity-btn:hover{border-color:var(--green);transform:scale(0.99);}
+  .activity-btn:active{border-color:var(--green);transform:scale(0.99);}
   .activity-btn-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
   .activity-btn-icon.nfc{background:rgba(184,52,31,0.1);}
   .activity-btn-icon.quiz{background:rgba(29,158,117,0.1);}
@@ -60,8 +50,6 @@
   .activity-btn-title{font-size:16px;font-weight:700;margin-bottom:3px;}
   .activity-btn-desc{font-size:12px;color:var(--text2);}
   .activity-btn-arrow{font-size:22px;color:var(--text2);}
-
-  /* 排行榜 */
   .lb-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px 20px;margin-bottom:14px;}
   .lb-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
   .lb-row:last-child{border-bottom:none;}
@@ -70,15 +58,10 @@
   .lb-name.me{color:var(--green);font-weight:700;}
   .lb-score{font-size:15px;font-weight:700;}
   .lb-score.me{color:var(--green);}
-
   .refresh-btn{background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:4px 8px;text-decoration:underline;display:block;text-align:center;margin:0 auto;}
 </style>
 </head>
 <body>
-<div id="fb-test" style="position:fixed;top:0;left:0;right:0;background:#fff;padding:12px;font-size:12px;font-family:monospace;z-index:999;border-bottom:2px solid #ccc">
-  Firebase 測試中...
-</div>
-<div style="height:48px"></div>
 <div class="container">
 
   <!-- 設定畫面 -->
@@ -106,28 +89,17 @@
       <button class="change-btn" onclick="changeGroup()">更換組別</button>
     </div>
 
-    <!-- 積分總覽 -->
     <div class="score-card">
       <div class="score-label">⭐ 我的積分</div>
       <div class="score-total" id="score-total">0</div>
       <div class="score-unit">總分</div>
       <div class="score-breakdown">
-        <div class="breakdown-item">
-          <div class="breakdown-num" id="score-nfc">0</div>
-          <div class="breakdown-label">🗺️ 尋寶</div>
-        </div>
-        <div class="breakdown-item">
-          <div class="breakdown-num" id="score-quiz">0</div>
-          <div class="breakdown-label">🎮 搶答</div>
-        </div>
-        <div class="breakdown-item">
-          <div class="breakdown-num" id="score-bonus">0</div>
-          <div class="breakdown-label">🎁 加分</div>
-        </div>
+        <div class="breakdown-item"><div class="breakdown-num" id="score-nfc">0</div><div class="breakdown-label">🗺️ 尋寶</div></div>
+        <div class="breakdown-item"><div class="breakdown-num" id="score-quiz">0</div><div class="breakdown-label">🎮 搶答</div></div>
+        <div class="breakdown-item"><div class="breakdown-num" id="score-bonus">0</div><div class="breakdown-label">🎁 加分</div></div>
       </div>
     </div>
 
-    <!-- 尋寶進度 -->
     <div class="progress-card" id="nfc-progress-card" style="display:none">
       <div class="score-label">🗺️ 尋寶進度</div>
       <div id="nfc-route-text" style="font-size:13px;color:var(--text2);margin-bottom:4px"></div>
@@ -135,7 +107,6 @@
       <div id="nfc-meta" style="font-size:12px;color:var(--text2)"></div>
     </div>
 
-    <!-- 活動按鈕 -->
     <div class="activity-section">
       <div class="activity-label">參加活動</div>
       <a href="../player-firebase.html" class="activity-btn" onclick="syncGroup()">
@@ -156,7 +127,6 @@
       </a>
     </div>
 
-    <!-- 排行榜 -->
     <div class="lb-card">
       <div class="score-label">🏆 總排行榜</div>
       <div id="lb-list"><div style="text-align:center;color:var(--text2);padding:16px;font-size:13px">載入中...</div></div>
@@ -186,28 +156,109 @@ let myGroup = '';
 let GROUPS = {};
 let NFC_CONFIG = {};
 
-async function init() {
-  // 先顯示設定畫面
+window.confirmGroup = function() {
+  const sel = $('group-select').value;
+  const inp = $('group-input').value.trim();
+  myGroup = sel || inp;
+  if (!myGroup) { $('group-input').focus(); return; }
+  localStorage.setItem('player_group', myGroup);
+  syncGroup();
+  showMain();
+}
+
+window.syncGroup = function() {
+  localStorage.setItem('nfc_team', myGroup);
+  localStorage.setItem('quiz_group', myGroup);
+}
+
+window.changeGroup = function() {
+  localStorage.removeItem('player_group');
+  myGroup = '';
   $('setup-screen').style.display = '';
+  $('main-screen').style.display = 'none';
+  $('group-select').value = '';
+  $('group-input').value = '';
+}
 
+function showMain() {
+  $('setup-screen').style.display = 'none';
+  $('main-screen').style.display = '';
+  $('top-group-name').textContent = myGroup;
+  loadScore();
+}
+
+window.loadScore = async function() {
   try {
-    const [groupSnap, nfcSnap] = await Promise.all([
-      getDoc(doc(db,'config','groups')),
-      getDoc(doc(db,'config','nfc'))
-    ]);
+    const groupSnap = await getDoc(doc(db,'config','groups'));
     if (groupSnap.exists()) GROUPS = groupSnap.data().groups || {};
-    if (nfcSnap.exists()) NFC_CONFIG = nfcSnap.data();
 
+    const groupData = Object.values(GROUPS).find(g=>g.name===myGroup);
+    const nfc = groupData?.nfcPoints || 0;
+    const quiz = groupData?.quizPoints || 0;
+    const bonus = groupData?.bonusPoints || 0;
+    const total = nfc + quiz + bonus;
+
+    $('score-total').textContent = total;
+    $('score-nfc').textContent = nfc;
+    $('score-quiz').textContent = quiz;
+    $('score-bonus').textContent = bonus;
+
+    // 尋寶進度
+    const nfcSnap = await getDocs(collection(db,'teams'));
+    const nfcTeam = nfcSnap.docs.map(d=>d.data()).find(t=>t.name===myGroup);
+    if (nfcTeam && nfcTeam.route) {
+      $('nfc-progress-card').style.display = '';
+      const nfcCfgSnap = await getDoc(doc(db,'config','nfc'));
+      if (nfcCfgSnap.exists()) NFC_CONFIG = nfcCfgSnap.data();
+      const totalStations = NFC_CONFIG.routes?.[nfcTeam.route]?.stations || 9;
+      $('nfc-route-text').textContent = `路線 ${nfcTeam.route} · 進度 ${nfcTeam.progress||0}/${totalStations}`;
+      const dots = Array.from({length:totalStations},(_,i)=>{
+        let cls='pdot';
+        if(i+1<=(nfcTeam.progress||0)) cls+=i+1===totalStations?' finish':' done';
+        return `<div class="${cls}"></div>`;
+      }).join('');
+      $('pdot-row').innerHTML = dots;
+      $('nfc-meta').textContent = `錯誤 ${nfcTeam.errors||0} 次`;
+    } else {
+      $('nfc-progress-card').style.display = 'none';
+    }
+
+    // 排行榜
+    const sorted = Object.values(GROUPS).map(g=>({
+      name:g.name,
+      total:(g.nfcPoints||0)+(g.quizPoints||0)+(g.bonusPoints||0)
+    })).sort((a,b)=>b.total-a.total);
+
+    $('lb-list').innerHTML = sorted.length ? sorted.map((g,i)=>`
+      <div class="lb-row">
+        <div class="lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+        <div class="lb-name ${g.name===myGroup?'me':''}">${g.name}${g.name===myGroup?' 👈':''}</div>
+        <div class="lb-score ${g.name===myGroup?'me':''}">${g.total}</div>
+      </div>`).join('') : '<div style="text-align:center;color:var(--text2);padding:16px;font-size:13px">尚無資料</div>';
+
+  } catch(e) {
+    console.error('載入失敗:', e);
+  }
+}
+
+async function init() {
+  $('setup-screen').style.display = '';
+  try {
+    const groupSnap = await getDoc(doc(db,'config','groups'));
+    if (groupSnap.exists()) GROUPS = groupSnap.data().groups || {};
     const sel = $('group-select');
     sel.innerHTML = '<option value="">— 選擇你的組別 —</option>' +
       Object.values(GROUPS).map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
   } catch(e) {
     console.error('Firebase 讀取失敗:', e);
   }
-
   const saved = localStorage.getItem('player_group');
   if (saved) { myGroup = saved; showMain(); }
 }
+
+$('group-select').addEventListener('change', function(){ if(this.value) $('group-input').value=''; });
+$('group-input').addEventListener('input', function(){ if(this.value) $('group-select').value=''; });
+$('group-input').addEventListener('keydown', e=>{ if(e.key==='Enter') confirmGroup(); });
 
 init();
 </script>
