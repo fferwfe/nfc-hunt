@@ -155,8 +155,12 @@ function render(state) {
           <div class="element-value">${v}</div>
         </div>`).join('');
     }
-    // timer
-    const left = state.timerLeft ?? TIMER_SECS;
+    // timer - self-calculate from timerStartedAt
+    let left = state.timerLeft ?? TIMER_SECS;
+    if (state.timerRunning && state.timerStartedAt) {
+      const elapsed = Math.floor((Date.now() - state.timerStartedAt) / 1000);
+      left = Math.max(0, (state.timerSnapshotLeft ?? TIMER_SECS) - elapsed);
+    }
     const pct = (left/TIMER_SECS)*100;
     const bar = $('timer-bar-screen');
     bar.style.width = pct+'%';
